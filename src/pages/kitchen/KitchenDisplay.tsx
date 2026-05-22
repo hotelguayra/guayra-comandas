@@ -197,6 +197,7 @@ export function KitchenDisplay() {
     queryKey: ['pedidos-activos', panel],
     queryFn: () => getPedidosActivos(panel),
     refetchInterval: false,
+    placeholderData: (prev) => prev,
   })
 
   const handleInsert = useCallback(() => {
@@ -240,7 +241,7 @@ export function KitchenDisplay() {
   }
 
   return (
-    <div className={clsx('min-h-screen flex flex-col', darkMode ? 'bg-windsor' : 'bg-tierra-light')}>
+    <div className={clsx('h-screen flex flex-col', darkMode ? 'bg-windsor' : 'bg-tierra-light')}>
       <header className={clsx(
         'px-6 py-3 flex items-center justify-between border-b',
         darkMode ? 'glass border-tierra/10' : 'bg-tierra-light/95 backdrop-blur-md border-tierra-dark/20'

@@ -194,6 +194,7 @@ export function PostresDisplay() {
     queryKey: ['pedidos-activos', 'postres'],
     queryFn: () => getPedidosActivos('postres'),
     refetchInterval: false,
+    placeholderData: (prev) => prev,
   })
 
   const handleInsert = useCallback(() => {
@@ -236,7 +237,7 @@ export function PostresDisplay() {
   }
 
   return (
-    <div className={clsx('min-h-screen flex flex-col', darkMode ? 'bg-windsor' : 'bg-tierra-light')}>
+    <div className={clsx('h-screen flex flex-col', darkMode ? 'bg-windsor' : 'bg-tierra-light')}>
       <header className={clsx(
         'px-6 py-3 flex items-center justify-between border-b',
         darkMode ? 'glass border-tierra/10' : 'bg-tierra-light/95 backdrop-blur-md border-tierra-dark/20'
