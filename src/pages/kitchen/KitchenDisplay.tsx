@@ -118,7 +118,7 @@ function KitchenCard({
               {item.cantidad}x
             </span>
             <div>
-              <p className={clsx('font-bold text-base leading-tight', darkMode ? 'text-tierra' : 'text-windsor')}>
+              <p className={clsx('font-medium text-[15px] leading-snug', darkMode ? 'text-tierra' : 'text-windsor')}>
                 {item.producto?.nombre}
               </p>
               {item.notas && (
