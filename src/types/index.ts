@@ -49,6 +49,7 @@ export interface Mesa {
   id: string
   numero: number
   nombre: string
+  capacidad?: number
   categoria?: CategoriaHab
   cliente?: string
   activa: boolean

@@ -77,7 +77,7 @@ export function AdminProductos() {
         descripcion: form.descripcion || undefined,
         precio: parseFloat(form.precio),
         categoria_id: form.categoria_id || undefined,
-        subcategoria: form.subcategoria.trim() || null,
+        subcategoria: form.subcategoria.trim() || undefined,
         disponible: form.disponible,
         panel: form.panel || null,
       }
