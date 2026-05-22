@@ -1,8 +1,8 @@
-import { type ReactNode, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { type ReactNode, useState, useRef, useEffect } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Tag, Table2, Users, ClipboardList,
-  Menu, X, Layers, BarChart2
+  Menu, X, Layers, BarChart2, ChefHat, UtensilsCrossed, Building2, ChevronDown
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,6 +10,57 @@ import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { supabase } from '@/lib/supabase'
 import { clsx } from 'clsx'
+
+const VIEW_ITEMS = [
+  { to: '/cocina', icon: ChefHat, label: 'Ver como Cocina' },
+  { to: '/mozo', icon: UtensilsCrossed, label: 'Ver como Mozo' },
+  { to: '/recepcion', icon: Building2, label: 'Ver como Recepción' },
+]
+
+function LogoDropdown() {
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-3 group w-full"
+      >
+        <img src="/logoG.png" alt="Guayrá" className="h-8 w-auto object-contain" />
+        <div className="flex-1 text-left">
+          <h1 className="font-heading leading-none text-lg text-tierra-light">Guayrá</h1>
+          <p className="text-xs tracking-widest uppercase text-tierra-muted">Comandas</p>
+        </div>
+        <ChevronDown size={14} className={clsx('text-tierra-muted transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-full bg-windsor-card border border-tierra/15 rounded-xl shadow-lg overflow-hidden z-50">
+          {VIEW_ITEMS.map(({ to, icon: Icon, label }) => (
+            <button
+              key={to}
+              onClick={() => { navigate(to); setOpen(false) }}
+              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-tierra-muted hover:text-tierra hover:bg-windsor-lighter transition-colors"
+            >
+              <Icon size={15} />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const NAV_ITEMS = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -50,7 +101,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-windsor-card border-r border-tierra/10 min-h-screen fixed top-0 left-0 z-30">
         <div className="p-6 border-b border-tierra/10">
-          <Logo size="sm" />
+          <LogoDropdown />
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -99,8 +150,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
           <aside className="relative w-72 bg-windsor-card border-r border-tierra/10 flex flex-col">
             <div className="p-6 border-b border-tierra/10 flex items-center justify-between">
-              <Logo size="sm" />
-              <button onClick={() => setSidebarOpen(false)} className="text-tierra-muted">
+              <LogoDropdown />
+              <button onClick={() => setSidebarOpen(false)} className="text-tierra-muted ml-2">
                 <X size={20} />
               </button>
             </div>

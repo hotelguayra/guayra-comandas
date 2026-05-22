@@ -6,11 +6,36 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/Spinner'
 import { RoleBadge } from '@/components/ui/Badge'
-import { Plus, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react'
+import { Plus, ToggleLeft, ToggleRight, Trash2, Eye, EyeOff } from 'lucide-react'
 import type { UserRole } from '@/types'
 
 interface NewUserForm { email: string; password: string; nombre: string; rol: UserRole }
 const EMPTY_NEW: NewUserForm = { email: '', password: '', nombre: '', rol: 'mozo' }
+
+function PasswordInput({ value, onChange, placeholder }: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder?: string }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm text-tierra-muted">Contraseña</label>
+      <div className="relative">
+        <input
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className="input-field pr-10 w-full"
+        />
+        <button
+          type="button"
+          onClick={() => setShow(v => !v)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors"
+        >
+          {show ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export function AdminUsuarios() {
   const queryClient = useQueryClient()
@@ -127,7 +152,7 @@ export function AdminUsuarios() {
         <div className="space-y-4">
           <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Nombre completo" />
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="usuario@guayra.com" />
-          <Input label="Contraseña" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
+          <PasswordInput value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-tierra-muted">Rol</label>
             <select value={form.rol} onChange={(e) => setForm({ ...form, rol: e.target.value as UserRole })} className="input-field">
