@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(supabase --version)",
+      "Bash(npx supabase *)",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/tskhsgzaeboryyuksnld/database/query -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRza2hzZ3phZWJvcnl5dWtzbmxkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI1MDA5OCwiZXhwIjoyMDkzODI2MDk4fQ.0vuRyvYdy-0119PwQR3w-WuykWE84jTRH0WexeG0YUE' -H 'Content-Type: application/json' -d '{\"query\":\"SELECT 1 as test;\"}')",
+      "Bash(curl -s -X POST https://tskhsgzaeboryyuksnld.supabase.co/rest/v1/rpc/exec -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRza2hzZ3phZWJvcnl5dWtzbmxkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI1MDA5OCwiZXhwIjoyMDkzODI2MDk4fQ.0vuRyvYdy-0119PwQR3w-WuykWE84jTRH0WexeG0YUE' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRza2hzZ3phZWJvcnl5dWtzbmxkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI1MDA5OCwiZXhwIjoyMDkzODI2MDk4fQ.0vuRyvYdy-0119PwQR3w-WuykWE84jTRH0WexeG0YUE' -H 'Content-Type: application/json' -d '{\"sql\":\"SELECT 1\"}')",
+      "Bash(psql --version)",
+      "Bash(nslookup db.tskhsgzaeboryyuksnld.supabase.co)",
+      "Bash(cd /tmp)",
+      "Bash(cat)",
+      "Bash(node run_schema.mjs)",
+      "Bash(node -e ' *)",
+      "Bash(node *)",
+      "Bash(pkill -f \"vite\")",
+      "PowerShell(Get-Process *)",
+      "Bash(npx tsc *)",
+      "Bash(Get-ChildItem -Recurse \"c:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\\\\src\" -Include \"*.jsx\", \"*.tsx\", \"*.js\", \"*.ts\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\" -Recurse -Directory)",
+      "Bash(Sort-Object)",
+      "Bash(grep -E \"^pg$|postgres\")",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\\\\src\" -Recurse | Where-Object {$_.Name -match \"\\(route|nav|layout\\)\" -and $_.Extension -match \"\\(tsx|ts|jsx|js\\)\"} | Select-Object FullName)",
+      "Bash(findstr /v \"Mesas.tsx\")",
+      "Bash(findstr /v \"Productos.tsx\")",
+      "Bash(echo.)",
+      "Bash(New-Item -ItemType File \"c:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\\\\supabase\\\\items_eliminados.sql\")",
+      "Bash(Out-Null)",
+      "Bash(Get-Content \"c:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\\\\supabase\\\\items_eliminados.sql\" -Raw)",
+      "PowerShell(New-Item -ItemType File \"c:\\\\Users\\\\Pamela\\\\Desktop\\\\GUAYRACOMANDAS\\\\supabase\\\\items_eliminados.sql\")",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git remote *)"
+    ]
+  }
+}

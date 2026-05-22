@@ -1,0 +1,52 @@
+alter table public.mesas add column if not exists categoria text;
+alter table public.mesas add column if not exists cliente text;
+
+truncate public.pedido_items restart identity cascade;
+truncate public.pedidos restart identity cascade;
+delete from public.mesas;
+
+insert into public.mesas (numero, nombre, categoria, activa, estado) values
+(1,'DPTO-1','DPTO',true,'libre'),
+(2,'DPTO-2','DPTO',true,'libre'),
+(3,'DPTO-3','DPTO',true,'libre'),
+(11,'CAB-11','CAB',true,'libre'),
+(12,'CAB-12','CAB',true,'libre'),
+(13,'CAB-13','CAB',true,'libre'),
+(14,'CAB-14','CAB',true,'libre'),
+(15,'CAB-15','CAB',true,'libre'),
+(16,'CAB-16','CAB',true,'libre'),
+(17,'CAB-17','CAB',true,'libre'),
+(18,'CAB-18','CAB',true,'libre'),
+(21,'EST-21','EST',true,'libre'),
+(22,'EST-22','EST',true,'libre'),
+(23,'EST-23','EST',true,'libre'),
+(24,'EST-24','EST',true,'libre'),
+(31,'SUP-31','SUP',true,'libre'),
+(32,'SUP-32','SUP',true,'libre'),
+(33,'SUP-33','SUP',true,'libre'),
+(34,'SUP-34','SUP',true,'libre'),
+(35,'SUP-35','SUP',true,'libre'),
+(36,'SUP-36','SUP',true,'libre'),
+(37,'SUP-37','SUP',true,'libre'),
+(38,'SUP-38','SUP',true,'libre'),
+(41,'SUP-41','SUP',true,'libre'),
+(42,'SUP-42','SUP',true,'libre'),
+(43,'SUP-43','SUP',true,'libre'),
+(44,'SUP-44','SUP',true,'libre'),
+(45,'SUP-45','SUP',true,'libre'),
+(46,'SUP-46','SUP',true,'libre'),
+(47,'SUP-47','SUP',true,'libre'),
+(48,'SUP-48','SUP',true,'libre'),
+(51,'DLX-51','DLX',true,'libre'),
+(52,'DLX-52','DLX',true,'libre'),
+(53,'DLX-53','DLX',true,'libre'),
+(54,'DLX-54','DLX',true,'libre'),
+(61,'DLX-61','DLX',true,'libre'),
+(62,'DLX-62','DLX',true,'libre'),
+(63,'DLX-63','DLX',true,'libre'),
+(64,'DLX-64','DLX',true,'libre'),
+(901,'AF-1','AF',true,'libre'),
+(902,'AF-2','AF',true,'libre'),
+(903,'AF-3','AF',true,'libre'),
+(904,'AF-4','AF',true,'libre'),
+(905,'AF-5','AF',true,'libre');

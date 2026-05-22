@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'GalanoGrotesque';
+  src: url('/fonts/GalanoGrotesqueThinItalic.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'GalanoGrotesque';
+  src: url('/fonts/GalanoGrotesqueLight.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GalanoGrotesque';
+  src: url('/fonts/GalanoGrotesqueMediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'GalanoGrotesque';
+  src: url('/fonts/GalanoGrotesqueSemiBoldItalic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'GalanoGrotesque';
+  src: url('/fonts/GalanoGrotesqueHeavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'GalanoGrotesque', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-windsor text-tierra antialiased min-h-screen;
+    overscroll-behavior: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'GalanoGrotesque', sans-serif;
+    font-weight: 800;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-bronceado text-windsor font-body font-bold px-6 py-3 rounded-xl
+           hover:bg-bronceado-light active:scale-95 transition-all duration-200
+           shadow-card disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-windsor-lighter text-tierra border border-tierra/20 font-body px-6 py-3 rounded-xl
+           hover:border-tierra/40 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-rubi text-tierra font-body font-bold px-6 py-3 rounded-xl
+           hover:bg-rubi-light active:scale-95 transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-windsor-card border-2 border-tierra/15 rounded-2xl shadow-card;
+  }
+
+  .input-field {
+    @apply w-full bg-windsor-lighter border border-tierra/20 text-tierra rounded-xl px-4 py-3
+           placeholder-tierra-muted focus:outline-none focus:border-bronceado/50
+           transition-colors duration-200;
+  }
+
+  .badge-pendiente {
+    @apply bg-tierra-muted/20 text-tierra border border-tierra/20;
+  }
+
+  .badge-en_preparacion {
+    @apply bg-bronceado/20 text-bronceado border border-bronceado/30;
+  }
+
+  .badge-listo {
+    @apply bg-jade/20 text-jade border border-jade/30;
+  }
+
+  .badge-entregado {
+    @apply bg-windsor-lighter text-tierra-muted border border-tierra/10;
+  }
+
+  .badge-cancelado {
+    @apply bg-rubi/20 text-rubi-light border border-rubi/30;
+  }
+}
+
+@keyframes listo-bg {
+  0%, 100% { background-color: #101f30; }
+  50%       { background-color: rgba(183, 140, 87, 0.15); }
+}
+
+@keyframes cuenta-bg {
+  0%, 100% { background-color: #101f30; }
+  50%       { background-color: rgba(138, 29, 40, 0.20); }
+}
+
+@layer utilities {
+  .animate-listo-bg {
+    animation: listo-bg 1.4s ease-in-out infinite;
+  }
+
+  .animate-cuenta-bg {
+    animation: cuenta-bg 1.4s ease-in-out infinite;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glass {
+    background: rgba(19, 34, 51, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
