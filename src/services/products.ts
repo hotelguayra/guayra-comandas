@@ -122,3 +122,8 @@ export async function deleteSubcategoria(id: string): Promise<void> {
   const { error } = await supabase.from('subcategorias').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function toggleDisponibilidad(id: string, disponible: boolean): Promise<void> {
+  const { error } = await supabase.from('productos').update({ disponible }).eq('id', id)
+  if (error) throw error
+}

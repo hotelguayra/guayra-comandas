@@ -7,6 +7,7 @@ import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { ToastContainer, type ToastItem } from '@/components/ui/Toast'
 import { UserProfileModal } from '@/components/ui/UserProfileModal'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 interface MozoLayoutProps {
   children: ReactNode
@@ -230,6 +231,51 @@ function MozoHeader() {
   )
 }
 
+function PushBanner() {
+  const { state, subscribe } = usePushNotifications()
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem('push-banner-dismissed') === '1'
+  )
+
+  if (state !== 'default' || dismissed) return null
+
+  const handleActivar = async () => {
+    await subscribe()
+    setDismissed(true)
+    localStorage.setItem('push-banner-dismissed', '1')
+  }
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    localStorage.setItem('push-banner-dismissed', '1')
+  }
+
+  return (
+    <div className="bg-windsor-lighter border-b border-tierra/10 px-4 py-2.5">
+      <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+        <p className="text-sm text-tierra">
+          <Bell size={13} className="inline mr-1.5 text-jade" />
+          Activá notificaciones para saber cuando tu pedido está listo
+        </p>
+        <div className="flex gap-3 shrink-0">
+          <button
+            onClick={handleDismiss}
+            className="text-xs text-tierra-muted hover:text-tierra transition-colors"
+          >
+            Ahora no
+          </button>
+          <button
+            onClick={handleActivar}
+            className="text-xs font-bold text-jade hover:text-jade-light transition-colors"
+          >
+            Activar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function MozoLayout({ children }: MozoLayoutProps) {
   const { profile } = useAuth()
 
@@ -237,6 +283,7 @@ export function MozoLayout({ children }: MozoLayoutProps) {
     <NotificacionesProvider mozoId={profile?.id}>
       <div className="min-h-screen bg-windsor flex flex-col">
         <MozoHeader />
+        <PushBanner />
 
         <main className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
           {children}

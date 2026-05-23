@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
+import { Download } from 'lucide-react'
 import { Spinner } from '@/components/ui/Spinner'
 import {
   getResumenVentas,
@@ -40,6 +41,35 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'horapico', label: 'Horas pico' },
   { id: 'eliminados', label: 'Eliminados' },
 ]
+
+function exportarCSV(filename: string, headers: string[], rows: (string | number)[][]) {
+  const escape = (cell: string | number) => {
+    const str = String(cell)
+    return str.includes(',') || str.includes('"') || str.includes('\n')
+      ? `"${str.replace(/"/g, '""')}"`
+      : str
+  }
+  const csv = [headers, ...rows].map(row => row.map(escape).join(',')).join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${filename}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function ExportButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-tierra-muted border border-tierra/20 rounded-xl hover:border-tierra/40 hover:text-tierra transition-colors"
+    >
+      <Download size={13} />
+      Exportar CSV
+    </button>
+  )
+}
 
 function primerDiaMes(): string {
   const d = new Date()
@@ -111,11 +141,21 @@ function TabResumen({ data, isLoading }: { data?: ResumenVentas; isLoading: bool
   if (!data) return <TabVacio />
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard titulo="Total ventas" valor={formatPesos(data.totalVentas)} color="jade" />
-      <StatCard titulo="Pedidos entregados" valor={String(data.totalPedidos)} color="bronceado" />
-      <StatCard titulo="Ticket promedio" valor={formatPesos(data.ticketPromedio)} color="tierra" />
-      <StatCard titulo="Cancelados" valor={String(data.pedidosCancelados)} color="rubi" />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('resumen', ['Métrica', 'Valor'], [
+          ['Total ventas', data.totalVentas],
+          ['Pedidos entregados', data.totalPedidos],
+          ['Ticket promedio', data.ticketPromedio.toFixed(2)],
+          ['Cancelados', data.pedidosCancelados],
+        ])} />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard titulo="Total ventas" valor={formatPesos(data.totalVentas)} color="jade" />
+        <StatCard titulo="Pedidos entregados" valor={String(data.totalPedidos)} color="bronceado" />
+        <StatCard titulo="Ticket promedio" valor={formatPesos(data.ticketPromedio)} color="tierra" />
+        <StatCard titulo="Cancelados" valor={String(data.pedidosCancelados)} color="rubi" />
+      </div>
     </div>
   )
 }
@@ -127,7 +167,11 @@ function TabProductos({ data, isLoading }: { data?: TopProducto[]; isLoading: bo
   const maxCantidad = data[0]?.cantidad ?? 1
 
   return (
-    <div className="overflow-x-auto">
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('top-productos', ['#', 'Producto', 'Cantidad', 'Total Ventas'], data.map((item, i) => [i + 1, item.nombre, item.cantidad, item.totalVentas]))} />
+      </div>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-tierra/10">
@@ -160,6 +204,7 @@ function TabProductos({ data, isLoading }: { data?: TopProducto[]; isLoading: bo
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
@@ -172,6 +217,9 @@ function TabCategorias({ data, isLoading }: { data?: VentaCategoria[]; isLoading
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('categorias', ['Categoría', 'Items', 'Total Ventas'], data.map(cat => [cat.categoria, cat.cantidad, cat.totalVentas]))} />
+      </div>
       {data.map(cat => (
         <div
           key={cat.categoria}
@@ -214,6 +262,9 @@ function TabMozos({
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('mozos', ['Mozo', 'Pedidos', 'Mesas', 'Total Ventas', 'Ticket Promedio'], (data ?? []).map(m => [m.nombre, m.totalPedidos, m.mesasAtendidas, m.totalVentas, m.ticketPromedio.toFixed(2)]))} />
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -319,6 +370,9 @@ function TabDescuentos({ data, isLoading }: { data?: ResumenDescuentos; isLoadin
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('descuentos', ['Fecha', 'Mozo', 'Mesa', 'Motivo', '%', 'Descontado', 'Total Pedido'], data.detalle.map(d => [d.fecha, d.mozo, d.mesa, d.descuentoMotivo ?? '', d.descuentoPorcentaje, d.montoDescontado.toFixed(2), d.totalPedido.toFixed(2)]))} />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard titulo="Total descontado" valor={formatPesos(data.totalDescontado)} color="rubi" />
         <StatCard titulo="Pedidos con descuento" valor={String(data.pedidosConDescuento)} color="bronceado" />
@@ -569,6 +623,9 @@ function TabHoraPico({ data, isLoading }: { data?: VentaHora[]; isLoading: boole
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('horas-pico', ['Hora', 'Pedidos'], data.filter(d => d.totalPedidos > 0).sort((a, b) => b.totalPedidos - a.totalPedidos).map(d => [`${String(d.hora).padStart(2, '0')}:00`, d.totalPedidos]))} />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard
           titulo="Hora pico"
@@ -720,6 +777,9 @@ function TabEliminados({ data, isLoading }: { data?: ItemEliminado[]; isLoading:
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('items-eliminados', ['Fecha', 'Producto', 'Cant.', 'Precio Unit.', 'Total', 'Mesa', 'Cliente', 'Eliminado por'], data.map(r => [new Date(r.eliminadoAt).toLocaleString('es-AR'), r.productoNombre, r.cantidad, r.precioUnitario, r.valorTotal, r.mesaNombre ?? '', r.cliente ?? '', r.eliminadoPorNombre ?? '']))} />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard titulo="Ítems eliminados" valor={String(data.length)} color="rubi" />
         <StatCard titulo="Unidades quitadas" valor={String(totalItems)} color="bronceado" />
@@ -918,6 +978,9 @@ function TabVentasDia({ data, isLoading }: { data?: VentaDia[]; isLoading: boole
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButton onClick={() => exportarCSV('ventas-por-dia', ['Fecha', 'Pedidos', 'Ventas'], data.map(d => [d.fecha, d.totalPedidos, d.totalVentas]))} />
+      </div>
       <div className="rounded-xl border border-tierra/10 bg-windsor-lighter/20 p-4">
         <GraficoBarras datos={data} />
       </div>

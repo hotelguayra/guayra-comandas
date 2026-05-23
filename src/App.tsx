@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { useAuth } from '@/hooks/useAuth'
+import { OfflineBanner } from '@/components/ui/OfflineBanner'
 
 import { Login } from '@/pages/Login'
 
@@ -294,6 +295,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <OfflineBanner />
           <AppRoutes />
         </BrowserRouter>
       </AuthProvider>

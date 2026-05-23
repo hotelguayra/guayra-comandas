@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import Fuse from 'fuse.js'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getProductos, getCategorias } from '@/services/products'
+import { supabase } from '@/lib/supabase'
 import { useSubcategoriasMap } from '@/hooks/useSubcategoriasMap'
 import { getMesas } from '@/services/tables'
 import { createPedido } from '@/services/orders'
@@ -51,7 +52,18 @@ export function NuevoPedido() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
+  const queryClient = useQueryClient()
   const { items, addItem, removeItem, updateQty, updateNota, clearCart, setMesa, mesaId: cartMesaId, total } = useCartStore()
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('productos-disponibilidad-mozo')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'productos' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['productos'] })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [queryClient])
 
   useEffect(() => {
     if (!mesaId) return

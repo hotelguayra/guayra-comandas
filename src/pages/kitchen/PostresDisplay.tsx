@@ -6,7 +6,8 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { useNavigate } from 'react-router-dom'
-import { Clock, ChevronRight, Maximize2, ChefHat, Cake, Sun, Moon } from 'lucide-react'
+import { Clock, ChevronRight, Maximize2, ChefHat, Cake, Sun, Moon, PackageX } from 'lucide-react'
+import { DisponibilidadPanel } from '@/components/kitchen/DisponibilidadPanel'
 import type { Pedido, OrderStatus } from '@/types'
 import { clsx } from 'clsx'
 
@@ -176,6 +177,7 @@ export function PostresDisplay() {
   const [time, setTime] = useState(new Date())
   const prevActiveCountRef = useRef<number | null>(null)
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('kitchen-theme') !== 'light')
+  const [dispOpen, setDispOpen] = useState(false)
 
   const toggleTheme = () => {
     setDarkMode((prev) => {
@@ -271,6 +273,16 @@ export function PostresDisplay() {
             <span className={clsx('text-xs', darkMode ? 'text-jade' : 'text-jade-dark')}>Realtime activo</span>
           </div>
           <button
+            onClick={() => setDispOpen(true)}
+            title="Disponibilidad de productos"
+            className={clsx(
+              'p-2 rounded-xl transition-colors',
+              darkMode ? 'hover:bg-windsor-lighter text-tierra-muted' : 'hover:bg-tierra/40 text-windsor/60'
+            )}
+          >
+            <PackageX size={18} />
+          </button>
+          <button
             onClick={toggleTheme}
             title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             className={clsx(
@@ -353,6 +365,12 @@ export function PostresDisplay() {
           })}
         </div>
       )}
+
+      <DisponibilidadPanel
+        open={dispOpen}
+        onClose={() => setDispOpen(false)}
+        darkMode={darkMode}
+      />
     </div>
   )
 }
