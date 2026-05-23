@@ -125,7 +125,7 @@ function MozoHeader() {
             title="Cambiar contraseña"
           >
             {profile?.nombre}
-            <UserCircle size={15} className="text-tierra-muted" />
+            <UserCircle size={18} className="text-tierra-muted" />
           </button>
 
           <div className="relative">
