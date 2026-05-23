@@ -11,27 +11,35 @@ interface Props {
 
 export function UserProfileModal({ open, onClose }: Props) {
   const { profile, user, signOut } = useAuth()
+  const [oldPassword, setOldPassword] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showOld, setShowOld] = useState(false)
   const [showPass, setShowPass] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
   const handleClose = () => {
-    setPassword(''); setConfirm(''); setError(''); setSuccess(false)
+    setOldPassword(''); setPassword(''); setConfirm(''); setError(''); setSuccess(false)
     onClose()
   }
 
   const handleSave = async () => {
-    if (password.length < 6) return setError('Mínimo 6 caracteres.')
+    if (!oldPassword) return setError('Ingresá tu contraseña actual.')
+    if (password.length < 6) return setError('La nueva contraseña debe tener al menos 6 caracteres.')
     if (password !== confirm) return setError('Las contraseñas no coinciden.')
     setSaving(true); setError('')
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user?.email ?? '',
+      password: oldPassword,
+    })
+    if (signInError) { setSaving(false); return setError('La contraseña actual es incorrecta.') }
     const { error } = await supabase.auth.updateUser({ password })
     setSaving(false)
     if (error) return setError(error.message)
     setSuccess(true)
-    setPassword(''); setConfirm('')
+    setOldPassword(''); setPassword(''); setConfirm('')
     setTimeout(() => setSuccess(false), 2500)
   }
 
@@ -55,6 +63,23 @@ export function UserProfileModal({ open, onClose }: Props) {
         {/* Cambiar contraseña */}
         <div className="space-y-3">
           <p className="text-xs font-bold uppercase tracking-widest text-tierra-muted">Cambiar contraseña</p>
+
+          <div className="relative">
+            <input
+              type={showOld ? 'text' : 'password'}
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Contraseña actual"
+              className="input-field pr-10 w-full"
+            />
+            <button
+              type="button"
+              onClick={() => setShowOld(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors"
+            >
+              {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
 
           <div className="relative">
             <input
