@@ -1,11 +1,12 @@
 import { type ReactNode, useState, useEffect, useRef, useCallback } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, Bell, ChefHat, PlusCircle, ArrowRightLeft } from 'lucide-react'
+import { Home, ClipboardList, Bell, ChefHat, PlusCircle, ArrowRightLeft, KeyRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { NotificacionesProvider, useNotificaciones } from '@/contexts/NotificacionesContext'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { ToastContainer, type ToastItem } from '@/components/ui/Toast'
+import { UserProfileModal } from '@/components/ui/UserProfileModal'
 
 interface MozoLayoutProps {
   children: ReactNode
@@ -56,6 +57,7 @@ function MozoHeader() {
   const navigate = useNavigate()
   const { count: listosCount, pedidosListos, acknowledge, pedidosDeRecepcion, acknowledgeRecepcion, mesasTransferidas, acknowledgeTransferencias } = useNotificaciones()
   const [bellOpen, setBellOpen] = useState(false)
+  const [changePassOpen, setChangePassOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const seenRef = useRef<Set<string>>(new Set())
   const seenRecepcionRef = useRef<Set<string>>(new Set())
@@ -117,7 +119,14 @@ function MozoHeader() {
       <div className="max-w-lg mx-auto flex items-center justify-between">
         <Logo size="sm" />
         <div className="flex items-center gap-3">
-          <span className="text-tierra text-sm font-medium">{profile?.nombre}</span>
+          <button
+            onClick={() => setChangePassOpen(true)}
+            className="flex items-center gap-1.5 text-tierra text-sm font-medium hover:text-bronceado transition-colors"
+            title="Cambiar contraseña"
+          >
+            {profile?.nombre}
+            <KeyRound size={13} className="text-tierra-muted" />
+          </button>
 
           <div className="relative">
             {(() => {
@@ -217,6 +226,7 @@ function MozoHeader() {
         </div>
       </div>
     </header>
+    <UserProfileModal open={changePassOpen} onClose={() => setChangePassOpen(false)} />
     </>
   )
 }

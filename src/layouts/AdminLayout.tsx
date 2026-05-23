@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
+import { UserProfileModal } from '@/components/ui/UserProfileModal'
 import { supabase } from '@/lib/supabase'
 import { clsx } from 'clsx'
 
@@ -80,6 +81,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { profile } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [changePassOpen, setChangePassOpen] = useState(false)
 
   const { data: eliminadosHoy = 0 } = useQuery({
     queryKey: ['items-eliminados-hoy'],
@@ -131,17 +133,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-tierra/10">
-          <div className="flex items-center gap-3 mb-3 px-2">
+          <button
+            onClick={() => setChangePassOpen(true)}
+            className="flex items-center gap-3 w-full mb-3 px-2 rounded-xl hover:bg-windsor-lighter transition-colors py-2"
+          >
             <div className="w-8 h-8 rounded-full bg-bronceado/20 flex items-center justify-center text-bronceado font-bold text-sm">
               {profile?.nombre?.[0]?.toUpperCase()}
             </div>
-            <div>
+            <div className="text-left">
               <p className="text-sm text-tierra font-bold truncate">{profile?.nombre}</p>
               <p className="text-xs text-tierra-muted capitalize">{profile?.rol}</p>
             </div>
-          </div>
-          <LogoutButton className="w-full px-4 py-2.5 rounded-xl text-sm text-tierra-muted hover:text-rubi-light hover:bg-rubi/10 transition-colors" />
+          </button>
         </div>
+        <UserProfileModal open={changePassOpen} onClose={() => setChangePassOpen(false)} />
       </aside>
 
       {/* Mobile sidebar overlay */}
