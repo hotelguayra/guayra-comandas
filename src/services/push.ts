@@ -16,32 +16,40 @@ async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
 
 export async function subscribePush(): Promise<boolean> {
   const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+  console.log('[push] vapidKey:', vapidKey ? 'ok' : 'MISSING')
   if (!vapidKey || !('serviceWorker' in navigator) || !('PushManager' in window)) return false
 
   try {
     const permission = await Notification.requestPermission()
+    console.log('[push] permission:', permission)
     if (permission !== 'granted') return false
 
     const registration = await getRegistration()
+    console.log('[push] registration:', registration ? 'ok' : 'NONE')
     if (!registration) return false
 
     const existing = await registration.pushManager.getSubscription()
+    console.log('[push] existing sub:', existing ? 'yes' : 'no')
     const subscription =
       existing ??
       (await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       }))
+    console.log('[push] subscription created:', !!subscription)
 
     const { data: { user } } = await supabase.auth.getUser()
+    console.log('[push] user:', user?.id ?? 'NONE')
     if (!user) return false
 
     const { error } = await supabase
       .from('push_subscriptions')
       .upsert({ user_id: user.id, subscription: subscription.toJSON() }, { onConflict: 'user_id' })
+    console.log('[push] upsert error:', error ?? 'none')
 
     return !error
-  } catch {
+  } catch (e) {
+    console.error('[push] error:', e)
     return false
   }
 }
