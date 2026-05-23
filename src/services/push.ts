@@ -9,6 +9,11 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   return arr.buffer
 }
 
+async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
+  const regs = await navigator.serviceWorker.getRegistrations()
+  return regs[0] ?? null
+}
+
 export async function subscribePush(): Promise<boolean> {
   const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
   if (!vapidKey || !('serviceWorker' in navigator) || !('PushManager' in window)) return false
@@ -17,7 +22,9 @@ export async function subscribePush(): Promise<boolean> {
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') return false
 
-    const registration = await navigator.serviceWorker.ready
+    const registration = await getRegistration()
+    if (!registration) return false
+
     const existing = await registration.pushManager.getSubscription()
     const subscription =
       existing ??
@@ -29,11 +36,11 @@ export async function subscribePush(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return false
 
-    await supabase
+    const { error } = await supabase
       .from('push_subscriptions')
       .upsert({ user_id: user.id, subscription: subscription.toJSON() }, { onConflict: 'user_id' })
 
-    return true
+    return !error
   } catch {
     return false
   }
@@ -42,7 +49,8 @@ export async function subscribePush(): Promise<boolean> {
 export async function unsubscribePush(): Promise<void> {
   if (!('serviceWorker' in navigator)) return
   try {
-    const registration = await navigator.serviceWorker.ready
+    const registration = await getRegistration()
+    if (!registration) return
     const subscription = await registration.pushManager.getSubscription()
     if (subscription) await subscription.unsubscribe()
     const { data: { user } } = await supabase.auth.getUser()
