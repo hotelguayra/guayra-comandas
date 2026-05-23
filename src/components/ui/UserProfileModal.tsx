@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Modal } from './Modal'
+import { Button } from './Button'
 import { supabase } from '@/lib/supabase'
 import { Eye, EyeOff, LogOut, Mail, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,6 +13,7 @@ interface Props {
 
 export function UserProfileModal({ open, onClose }: Props) {
   const { profile, user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [oldPassword, setOldPassword] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -19,9 +22,12 @@ export function UserProfileModal({ open, onClose }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const handleClose = () => {
-    setOldPassword(''); setPassword(''); setConfirm(''); setError(''); setSuccess(false)
+    setOldPassword(''); setPassword(''); setConfirm('')
+    setError(''); setSuccess(false); setConfirmLogout(false)
     onClose()
   }
 
@@ -43,6 +49,12 @@ export function UserProfileModal({ open, onClose }: Props) {
     setTimeout(() => setSuccess(false), 2500)
   }
 
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await signOut()
+    navigate('/login')
+  }
+
   return (
     <Modal open={open} onClose={handleClose} title="Mi cuenta">
       <div className="space-y-5">
@@ -52,7 +64,7 @@ export function UserProfileModal({ open, onClose }: Props) {
           <div className="flex items-center gap-2 text-sm">
             <User size={14} className="text-tierra-muted flex-shrink-0" />
             <span className="text-tierra font-medium">{profile?.nombre}</span>
-            <span className="ml-auto text-[11px] text-tierra-muted capitalize bg-bronceado/10 text-bronceado px-2 py-0.5 rounded-full">{profile?.rol}</span>
+            <span className="ml-auto text-[11px] capitalize bg-bronceado/10 text-bronceado px-2 py-0.5 rounded-full">{profile?.rol}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Mail size={14} className="text-tierra-muted flex-shrink-0" />
@@ -72,11 +84,8 @@ export function UserProfileModal({ open, onClose }: Props) {
               placeholder="Contraseña actual"
               className="input-field pr-10 w-full"
             />
-            <button
-              type="button"
-              onClick={() => setShowOld(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors"
-            >
+            <button type="button" onClick={() => setShowOld(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors">
               {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
@@ -89,11 +98,8 @@ export function UserProfileModal({ open, onClose }: Props) {
               placeholder="Nueva contraseña"
               className="input-field pr-10 w-full"
             />
-            <button
-              type="button"
-              onClick={() => setShowPass(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors"
-            >
+            <button type="button" onClick={() => setShowPass(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-windsor transition-colors">
               {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
@@ -119,13 +125,27 @@ export function UserProfileModal({ open, onClose }: Props) {
         </div>
 
         {/* Cerrar sesión */}
-        <button
-          onClick={() => { handleClose(); signOut() }}
-          className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-rubi-light hover:bg-rubi/10 border border-rubi/20 transition-colors"
-        >
-          <LogOut size={15} />
-          Cerrar sesión
-        </button>
+        {!confirmLogout ? (
+          <button
+            onClick={() => setConfirmLogout(true)}
+            className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-rubi-light hover:bg-rubi/10 border border-rubi/20 transition-colors"
+          >
+            <LogOut size={15} />
+            Cerrar sesión
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-tierra text-sm text-center">¿Seguro que querés cerrar la sesión?</p>
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={() => setConfirmLogout(false)} className="flex-1" disabled={loggingOut}>
+                Cancelar
+              </Button>
+              <Button variant="danger" loading={loggingOut} onClick={handleLogout} className="flex-1">
+                Cerrar sesión
+              </Button>
+            </div>
+          </div>
+        )}
 
       </div>
     </Modal>

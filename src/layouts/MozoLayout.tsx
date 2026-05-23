@@ -222,7 +222,6 @@ function MozoHeader() {
             )}
           </div>
 
-          <LogoutButton iconOnly className="p-2 rounded-xl hover:bg-windsor-lighter text-tierra-muted transition-colors" />
         </div>
       </div>
     </header>
