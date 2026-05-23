@@ -1,6 +1,6 @@
 import { type ReactNode, useState, useEffect, useRef, useCallback } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, Bell, ChefHat, PlusCircle, ArrowRightLeft, KeyRound } from 'lucide-react'
+import { Home, ClipboardList, Bell, ChefHat, PlusCircle, ArrowRightLeft, UserCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { NotificacionesProvider, useNotificaciones } from '@/contexts/NotificacionesContext'
 import { Logo } from '@/components/ui/Logo'
@@ -125,7 +125,7 @@ function MozoHeader() {
             title="Cambiar contraseña"
           >
             {profile?.nombre}
-            <KeyRound size={13} className="text-tierra-muted" />
+            <UserCircle size={15} className="text-tierra-muted" />
           </button>
 
           <div className="relative">
