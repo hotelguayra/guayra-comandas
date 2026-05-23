@@ -15,7 +15,14 @@ export function usePushNotifications() {
       setState('unsupported')
       return
     }
-    setState(Notification.permission as PushState)
+    const perm = Notification.permission as PushState
+    setState(perm)
+    // Si ya tiene permiso pero no guardó la suscripción, la guarda ahora
+    if (perm === 'granted' && !localStorage.getItem('push-subscribed')) {
+      subscribePush().then((ok) => {
+        if (ok) localStorage.setItem('push-subscribed', '1')
+      }).catch(() => {})
+    }
   }, [])
 
   const subscribe = useCallback(async () => {
