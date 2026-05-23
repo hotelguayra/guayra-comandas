@@ -50,7 +50,7 @@ function TicketCopy({
           style={{ width: '38mm', height: 'auto', display: 'block', margin: '0 auto' }}
         />
       </div>
-      <hr style={{ border: 'none', borderTop: '2px solid #000', margin: '3px 0' }} />
+      <hr style={{ border: 'none', borderTop: '2px solid #000', margin: '3px 0' }} />  
       <div>Ticket N°: {ticketNum}</div>
       <div>Fecha: {fecha}  Hora: {hora}</div>
       <div>Mesa: {mesaLabel}</div>
@@ -97,9 +97,8 @@ export function Ticket(props: TicketProps) {
     <>
       <style>{PRINT_STYLE}</style>
       <div id="ticket-root" style={{ display: 'none' }}>
-        <TicketCopy {...props} />
-        <div style={{ borderTop: '1px dashed #000', margin: '8px 0', textAlign: 'center', fontSize: '10px' }}>
-          - - - - - (CORTE) - - - - -
+        <div style={{ pageBreakAfter: 'always', breakAfter: 'page' }}>
+          <TicketCopy {...props} />
         </div>
         <TicketCopy {...props} />
       </div>
