@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedidosForMesas } from '@/services/orders'
 import { getMesas, cerrarMesa, pedirCuenta, cancelarCuenta, transferirMesasAlMozo, transferirMesasEspecificas, migrarMesa, updateMesa } from '@/services/tables'
@@ -80,9 +80,10 @@ function PedidoRow({ pedido }: { pedido: Pedido }) {
 
 export function MisPedidos() {
   const { user }     = useAuth()
-  const navigate     = useNavigate()
-  const location     = useLocation()
-  const queryClient  = useQueryClient()
+  const navigate      = useNavigate()
+  const location      = useLocation()
+  const [searchParams] = useSearchParams()
+  const queryClient   = useQueryClient()
   const { acknowledge, acknowledgeTransferencias } = useNotificaciones()
 
   useEffect(() => {
@@ -126,14 +127,14 @@ export function MisPedidos() {
   const [migrando,    setMigrando]    = useState(false)
 
   useEffect(() => {
-    const mesaId = (location.state as any)?.mesaId
+    const mesaId = (location.state as any)?.mesaId ?? searchParams.get('mesa')
     if (mesaId) {
       setExpandedMesa(mesaId)
       requestAnimationFrame(() => requestAnimationFrame(() => {
         document.getElementById(`mesa-${mesaId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }))
     }
-  }, [location.state])
+  }, [location.state, searchParams])
 
   const { data: mesas } = useQuery({
     queryKey: ['mesas'],

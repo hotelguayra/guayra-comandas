@@ -24,7 +24,7 @@ serve(async (req) => {
 
     const { data: pedido } = await supabase
       .from('pedidos')
-      .select('mozo_id, mesa:mesas(nombre, cliente)')
+      .select('mozo_id, mesa_id, mesa:mesas(nombre, cliente)')
       .eq('id', pedidoId)
       .single()
 
@@ -53,7 +53,7 @@ serve(async (req) => {
       subs.map(({ subscription }) =>
         webpush.sendNotification(
           subscription as any,
-          JSON.stringify({ title, body, url: '/mozo/mis-pedidos', pedidoId })
+          JSON.stringify({ title, body, url: `/mozo/mis-pedidos?mesa=${pedido.mesa_id}`, pedidoId })
         )
       )
     )
