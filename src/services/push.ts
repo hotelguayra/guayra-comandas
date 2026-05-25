@@ -28,19 +28,34 @@ export async function subscribePush(): Promise<boolean> {
     console.log('[push] registration:', registration ? 'ok' : 'NONE')
     if (!registration) return false
 
-    const existing = await registration.pushManager.getSubscription()
-    console.log('[push] existing sub:', existing ? 'yes' : 'no')
-    const subscription =
-      existing ??
-      (await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
-      }))
-    console.log('[push] subscription created:', !!subscription)
-
     const { data: { user } } = await supabase.auth.getUser()
     console.log('[push] user:', user?.id ?? 'NONE')
     if (!user) return false
+
+    // Check if the browser's existing subscription is already synced with the DB.
+    // If the endpoints match, the subscription is valid — nothing to do.
+    const existing = await registration.pushManager.getSubscription()
+    if (existing) {
+      const { data: dbSub } = await supabase
+        .from('push_subscriptions')
+        .select('subscription')
+        .eq('user_id', user.id)
+        .single()
+      const dbEndpoint = (dbSub?.subscription as any)?.endpoint
+      if (dbEndpoint && dbEndpoint === existing.endpoint) {
+        console.log('[push] subscription already synced, skipping')
+        return true
+      }
+      // Endpoint mismatch or missing from DB (e.g. deleted after 410) — force fresh subscription
+      console.log('[push] endpoint mismatch or missing in DB, re-subscribing')
+      await existing.unsubscribe()
+    }
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+    })
+    console.log('[push] new subscription endpoint:', subscription.endpoint)
 
     const { error } = await supabase
       .from('push_subscriptions')

@@ -17,11 +17,11 @@ export function usePushNotifications() {
     }
     const perm = Notification.permission as PushState
     setState(perm)
-    // Si ya tiene permiso pero no guardó la suscripción, la guarda ahora
-    if (perm === 'granted' && !localStorage.getItem('push-subscribed')) {
-      subscribePush().then((ok) => {
-        if (ok) localStorage.setItem('push-subscribed', '1')
-      }).catch(() => {})
+    // Re-subscribe on every mount when permission is granted.
+    // subscribePush() returns early if the subscription is already synced with the DB,
+    // so this is cheap in the normal case and handles expired subscriptions (410).
+    if (perm === 'granted') {
+      subscribePush().catch(() => {})
     }
   }, [])
 
