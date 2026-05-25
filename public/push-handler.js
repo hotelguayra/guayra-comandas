@@ -5,7 +5,8 @@ self.addEventListener('push', (event) => {
       body: data.body ?? '',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'pedido-listo',
+      // Use pedido-specific tag so concurrent notifications don't replace each other
+      tag: data.pedidoId ? `pedido-${data.pedidoId}` : `pedido-${Date.now()}`,
       renotify: true,
       data: { url: data.url ?? '/mozo/mis-pedidos' },
     })
@@ -19,8 +20,7 @@ self.addEventListener('notificationclick', (event) => {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
-          client.focus()
-          return
+          return client.focus().then((c) => c && c.navigate ? c.navigate(url) : null)
         }
       }
       if (clients.openWindow) return clients.openWindow(url)
