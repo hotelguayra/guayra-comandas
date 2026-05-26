@@ -1,12 +1,18 @@
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {}
 
-  event.waitUntil((async () => {
-    // Get the existing summary notification (if any) to accumulate items
-    const existing = await self.registration.getNotifications({ tag: 'pedidos' })
-    const prevItems = existing[0]?.data?.items ?? []
+  async function handle() {
+    let prevItems = []
+    try {
+      const existing = await self.registration.getNotifications({ tag: 'pedidos' })
+      prevItems = (existing[0]?.data?.items) ?? []
+    } catch (_) {}
 
-    const newItem = { title: data.title ?? 'Pedido listo', body: data.body ?? '', url: data.url ?? '/mozo/mis-pedidos' }
+    const newItem = {
+      title: data.title ?? 'Pedido listo',
+      body: data.body ?? '',
+      url: data.url ?? '/mozo/mis-pedidos',
+    }
     const allItems = [...prevItems, newItem]
 
     const title = allItems.length === 1
@@ -17,7 +23,7 @@ self.addEventListener('push', (event) => {
       ? newItem.body
       : allItems.map(i => i.title).join('\n')
 
-    await self.registration.showNotification(title, {
+    return self.registration.showNotification(title, {
       body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
@@ -25,13 +31,14 @@ self.addEventListener('push', (event) => {
       renotify: true,
       data: { url: '/mozo/mis-pedidos', items: allItems, singleUrl: newItem.url },
     })
-  })())
+  }
+
+  event.waitUntil(handle())
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const items = event.notification.data?.items ?? []
-  // If only one pedido, open that mesa directly; otherwise open mis-pedidos
   const url = items.length === 1
     ? (event.notification.data?.singleUrl ?? '/mozo/mis-pedidos')
     : '/mozo/mis-pedidos'
