@@ -22,6 +22,9 @@ export function usePushNotifications() {
     // so this is cheap in the normal case and handles expired subscriptions (410).
     if (perm === 'granted') {
       subscribePush().catch(() => {})
+      // Refresh every 30 min while the app is open to prevent FCM expiration on Android
+      const interval = setInterval(() => subscribePush().catch(() => {}), 30 * 60 * 1000)
+      return () => clearInterval(interval)
     }
   }, [])
 
