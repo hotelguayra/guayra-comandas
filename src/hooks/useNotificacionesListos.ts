@@ -77,11 +77,15 @@ export function useNotificacionesListos(mozoId: string | undefined): Notificacio
     // Hay que leer directamente de pedido_panel_estados para ver los 'listo'.
     const { data } = await supabase
       .from('pedido_panel_estados')
-      .select('pedido:pedidos(mesa_id, mozo_id, mesa:mesas(nombre, cliente))')
+      .select('pedido:pedidos(mesa_id, mozo_id, mesa:mesas(nombre, cliente, estado, mozo_activo_id))')
       .eq('estado', 'listo')
 
     const items: PedidoListo[] = (data ?? [])
-      .filter((row: any) => row.pedido?.mozo_id === mozoId)
+      .filter((row: any) =>
+        row.pedido?.mozo_id === mozoId &&
+        row.pedido?.mesa?.mozo_activo_id === mozoId &&
+        row.pedido?.mesa?.estado !== 'libre'
+      )
       .map((row: any) => ({
         mesa_id: row.pedido.mesa_id as string,
         mesaNombre: row.pedido.mesa?.nombre ?? '—',
