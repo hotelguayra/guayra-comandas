@@ -48,7 +48,7 @@ export async function subscribePush(): Promise<boolean> {
       }
       // Endpoint mismatch or missing from DB (e.g. deleted after 410) — force fresh subscription
       console.log('[push] endpoint mismatch or missing in DB, re-subscribing')
-      await existing.unsubscribe()
+      try { await existing.unsubscribe() } catch (_) { /* ignore — may already be expired */ }
     }
 
     const subscription = await registration.pushManager.subscribe({
