@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { useAuth } from '@/hooks/useAuth'
 import { OfflineBanner } from '@/components/ui/OfflineBanner'
+import { subscribePush } from '@/services/push'
 
 import { Login } from '@/pages/Login'
 
@@ -50,6 +52,15 @@ function ProtectedRoute({
   roles?: string[]
 }) {
   const { isAuthenticated, profile, loading } = useAuth()
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (!('Notification' in window) || !('PushManager' in window)) return
+    if (Notification.permission !== 'granted') return
+    subscribePush().catch(() => {})
+    const interval = setInterval(() => subscribePush().catch(() => {}), 30 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [isAuthenticated])
 
   if (loading) return <div className="min-h-screen bg-windsor" />
   if (!isAuthenticated) return <Navigate to="/login" replace />

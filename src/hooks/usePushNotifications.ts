@@ -20,12 +20,6 @@ export function usePushNotifications() {
     // Re-subscribe on every mount when permission is granted.
     // subscribePush() returns early if the subscription is already synced with the DB,
     // so this is cheap in the normal case and handles expired subscriptions (410).
-    if (perm === 'granted') {
-      subscribePush().catch(() => {})
-      // Refresh every 30 min while the app is open to prevent FCM expiration on Android
-      const interval = setInterval(() => subscribePush().catch(() => {}), 30 * 60 * 1000)
-      return () => clearInterval(interval)
-    }
   }, [])
 
   const subscribe = useCallback(async () => {
