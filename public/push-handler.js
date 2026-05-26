@@ -1,48 +1,20 @@
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {}
-
-  async function handle() {
-    let prevItems = []
-    try {
-      const existing = await self.registration.getNotifications({ tag: 'pedidos' })
-      prevItems = (existing[0]?.data?.items) ?? []
-    } catch (_) {}
-
-    const newItem = {
-      title: data.title ?? 'Pedido listo',
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Pedido listo', {
       body: data.body ?? '',
-      url: data.url ?? '/mozo/mis-pedidos',
-    }
-    const allItems = [...prevItems, newItem]
-
-    const title = allItems.length === 1
-      ? newItem.title
-      : `${allItems.length} pedidos listos para retirar`
-
-    const body = allItems.length === 1
-      ? newItem.body
-      : allItems.map(i => i.title).join('\n')
-
-    return self.registration.showNotification(title, {
-      body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'pedidos',
+      tag: data.pedidoId ? `pedido-${data.pedidoId}` : `pedido-${Date.now()}`,
       renotify: true,
-      data: { url: '/mozo/mis-pedidos', items: allItems, singleUrl: newItem.url },
+      data: { url: data.url ?? '/mozo/mis-pedidos' },
     })
-  }
-
-  event.waitUntil(handle())
+  )
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const items = event.notification.data?.items ?? []
-  const url = items.length === 1
-    ? (event.notification.data?.singleUrl ?? '/mozo/mis-pedidos')
-    : '/mozo/mis-pedidos'
-
+  const url = event.notification.data?.url ?? '/mozo/mis-pedidos'
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
