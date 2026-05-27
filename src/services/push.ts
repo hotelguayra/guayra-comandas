@@ -62,6 +62,15 @@ export async function subscribePush(): Promise<boolean> {
       .upsert({ user_id: user.id, subscription: subscription.toJSON() }, { onConflict: 'user_id' })
     console.log('[push] upsert error:', error ?? 'none')
 
+    if (!error) {
+      // Store Supabase URL in SW cache so the pushsubscriptionchange handler can call the server
+      // even when the app is closed (SW has no access to env variables or auth)
+      try {
+        const swCache = await caches.open('sw-config-v1')
+        await swCache.put('/supabase-url', new Response(import.meta.env.VITE_SUPABASE_URL ?? ''))
+      } catch {}
+    }
+
     return !error
   } catch (e) {
     console.error('[push] error:', e)

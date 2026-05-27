@@ -93,11 +93,21 @@ export function useNotificacionesListos(mozoId: string | undefined): Notificacio
       }))
 
     const seen = new Set<string>()
-    setPedidosListos(items.filter((p) => {
+    const filtered = items.filter((p) => {
       if (seen.has(p.mesa_id)) return false
       seen.add(p.mesa_id)
       return true
-    }))
+    })
+    setPedidosListos(filtered)
+
+    // Si una mesa ya no tiene órdenes listas, sacarla de dismissed para que
+    // futuras notificaciones de esa misma mesa vuelvan a aparecer.
+    const activosIds = new Set(filtered.map((p) => p.mesa_id))
+    setDismissed((prev) => {
+      const next = new Set<string>()
+      prev.forEach((id) => { if (activosIds.has(id)) next.add(id) })
+      return next.size === prev.size ? prev : next
+    })
   }, [mozoId])
 
   const acknowledge = useCallback((mesaId: string) => {
@@ -151,7 +161,12 @@ export function useNotificacionesListos(mozoId: string | undefined): Notificacio
       )
       .subscribe()
 
+    // Polling de respaldo: si la tabla no está en la publicación realtime,
+    // o hay algún problema de red, igual actualizamos cada 30s.
+    const interval = setInterval(fetchListos, 30_000)
+
     return () => {
+      clearInterval(interval)
       supabase.removeChannel(channel)
     }
   }, [mozoId, fetchListos, fetchMisMesas])

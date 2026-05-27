@@ -59,9 +59,20 @@ function ProtectedRoute({
     if (!isAuthenticated) return
     if (!('Notification' in window) || !('PushManager' in window)) return
     if (Notification.permission !== 'granted') return
+
     subscribePush().catch(() => {})
+
+    // Re-subscribe when the user returns to the app (covers subscription changes while closed)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') subscribePush().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     const interval = setInterval(() => subscribePush().catch(() => {}), 30 * 60 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      clearInterval(interval)
+    }
   }, [isAuthenticated])
 
   if (loading) return <div className="min-h-screen bg-windsor" />

@@ -91,6 +91,7 @@ export function MisPedidos() {
   }, [])
 
   const [expandedMesa,     setExpandedMesa]     = useState<string | null>(null)
+  const [scrollPendingMesa, setScrollPendingMesa] = useState<string | null>(null)
   const [closingMesa,      setClosingMesa]      = useState<string | null>(null)
   const [cuentaMesa,       setCuentaMesa]       = useState<string | null>(null)
   const [confirmCuenta,    setConfirmCuenta]    = useState<string | null>(null)
@@ -130,6 +131,7 @@ export function MisPedidos() {
     const mesaId = (location.state as any)?.mesaId ?? searchParams.get('mesa')
     if (mesaId) {
       setExpandedMesa(mesaId)
+      setScrollPendingMesa(mesaId)
       requestAnimationFrame(() => requestAnimationFrame(() => {
         document.getElementById(`mesa-${mesaId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }))
@@ -151,6 +153,14 @@ export function MisPedidos() {
     enabled: !!user && mesas !== undefined,
     refetchInterval: 15000,
   })
+
+  useEffect(() => {
+    if (!scrollPendingMesa || !pedidos) return
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.getElementById(`acciones-${scrollPendingMesa}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      setScrollPendingMesa(null)
+    }))
+  }, [scrollPendingMesa, pedidos])
 
   const { data: profiles } = useQuery({
     queryKey: ['profiles'],
@@ -489,7 +499,7 @@ export function MisPedidos() {
                         const esCuenta = estadoMesa === 'cuenta'
 
                         return (
-                          <div className="flex flex-col gap-2">
+                          <div id={`acciones-${mesaId}`} className="flex flex-col gap-2">
                             {!esCuenta && (
                               <Button
                                 size="lg"

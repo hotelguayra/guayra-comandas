@@ -26,3 +26,37 @@ self.addEventListener('notificationclick', (event) => {
     })
   )
 })
+
+// Fired when the browser renews the push subscription (e.g. FCM token refresh after long inactivity).
+// Without this handler the server keeps the stale endpoint and all subsequent pushes fail silently.
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    (async () => {
+      try {
+        // Re-subscribe using the same VAPID options the browser already knows
+        const newSub = event.newSubscription ??
+          (event.oldSubscription
+            ? await self.registration.pushManager.subscribe(event.oldSubscription.options)
+            : null)
+        if (!newSub || !event.oldSubscription) return
+
+        // Read Supabase URL stored by the app when it last subscribed
+        const cache = await caches.open('sw-config-v1')
+        const res = await cache.match('/supabase-url')
+        if (!res) return
+        const supabaseUrl = (await res.text()).replace(/\/$/, '')
+
+        await fetch(`${supabaseUrl}/functions/v1/update-push-sub`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            oldEndpoint: event.oldSubscription.endpoint,
+            newSubscription: newSub.toJSON(),
+          }),
+        })
+      } catch (e) {
+        console.error('[push-handler] pushsubscriptionchange error:', e)
+      }
+    })()
+  )
+})
