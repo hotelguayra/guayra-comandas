@@ -57,6 +57,10 @@ function ProtectedRoute({
 
   useEffect(() => {
     if (!isAuthenticated) return
+    // Migrate old localStorage dismissed flag → remove it so the banner can re-show
+    if (localStorage.getItem('push-banner-dismissed') === '1') {
+      localStorage.removeItem('push-banner-dismissed')
+    }
     if (!('Notification' in window) || !('PushManager' in window)) return
     if (Notification.permission !== 'granted') return
 
@@ -89,21 +93,28 @@ function ProtectedRoute({
 
 function PushBanner() {
   const { state, subscribe } = usePushNotifications()
+  // sessionStorage: the "not now" choice resets each time the app is opened.
+  // This ensures mozos who dismissed the banner see it again on next launch,
+  // which matters when their subscription was deleted and they need to re-subscribe.
   const [dismissed, setDismissed] = useState(
-    () => localStorage.getItem('push-banner-dismissed') === '1'
+    () => sessionStorage.getItem('push-banner-dismissed') === '1'
   )
 
   if (state !== 'default' || dismissed) return null
 
   const handleActivar = async () => {
-    await subscribe()
-    setDismissed(true)
-    localStorage.setItem('push-banner-dismissed', '1')
+    const ok = await subscribe()
+    if (ok) {
+      // Only hide permanently if the subscription actually succeeded
+      setDismissed(true)
+      sessionStorage.setItem('push-banner-dismissed', '1')
+    }
+    // If subscribe failed (user denied the browser dialog), banner stays visible
   }
 
   const handleDismiss = () => {
     setDismissed(true)
-    localStorage.setItem('push-banner-dismissed', '1')
+    sessionStorage.setItem('push-banner-dismissed', '1')
   }
 
   return (
