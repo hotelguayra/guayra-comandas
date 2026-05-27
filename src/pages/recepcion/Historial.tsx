@@ -6,6 +6,7 @@ import { getMesas } from '@/services/tables'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Ticket } from '@/components/print/Ticket'
+import { printWithCopies } from '@/lib/print'
 import type { Mesa, Pedido } from '@/types'
 import { clsx } from 'clsx'
 
@@ -111,6 +112,7 @@ function ModalDetalleTicket({
   const [descPct, setDescPct] = useState('')
   const [motivo, setMotivo] = useState(MOTIVOS[0])
   const [descuentoAplicado, setDescuentoAplicado] = useState(false)
+  const [showPrintOptions, setShowPrintOptions] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const sinDescuento = grupo.descuento_porcentaje === 0
@@ -275,8 +277,19 @@ function ModalDetalleTicket({
             )}
           </div>
 
+          <Modal open={showPrintOptions} onClose={() => setShowPrintOptions(false)} title="Imprimir ticket" size="sm" align="center">
+            <div className="flex gap-3 pt-2 pb-1">
+              <Button size="lg" onClick={() => { setShowPrintOptions(false); printWithCopies(1) }} className="flex-1">
+                Simple
+              </Button>
+              <Button size="lg" onClick={() => { setShowPrintOptions(false); printWithCopies(2) }} className="flex-1">
+                Doble
+              </Button>
+            </div>
+          </Modal>
+
           <div className="flex gap-2">
-            <Button size="md" onClick={() => window.print()} className="flex-1">
+            <Button size="md" onClick={() => setShowPrintOptions(true)} className="flex-1">
               <Printer size={16} className="mr-2" />
               Imprimir
             </Button>

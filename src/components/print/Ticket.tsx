@@ -97,9 +97,6 @@ export function Ticket(props: TicketProps) {
     <>
       <style>{PRINT_STYLE}</style>
       <div id="ticket-root" style={{ display: 'none' }}>
-        <div style={{ pageBreakAfter: 'always', breakAfter: 'page' }}>
-          <TicketCopy {...props} />
-        </div>
         <TicketCopy {...props} />
       </div>
     </>,

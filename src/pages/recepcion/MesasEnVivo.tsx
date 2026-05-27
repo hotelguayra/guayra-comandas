@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Ticket } from '@/components/print/Ticket'
+import { printWithCopies } from '@/lib/print'
 import type { Mesa, Pedido, Producto } from '@/types'
 import { clsx } from 'clsx'
 
@@ -519,12 +520,16 @@ function ModalDetalleMesa({
 
   const [showWarningCerrar, setShowWarningCerrar] = useState(false)
   const [showAgregarProductos, setShowAgregarProductos] = useState(false)
+  const [showPrintOptions, setShowPrintOptions] = useState(false)
 
   const handleClickCerrar = () => {
     setShowWarningCerrar(true)
   }
 
-  const handleImprimir = () => window.print()
+  const handleImprimir = (copias: number) => {
+    setShowPrintOptions(false)
+    printWithCopies(copias)
+  }
 
   const fmt = (n: number) =>
     '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -684,8 +689,19 @@ function ModalDetalleMesa({
               </div>
             </div>
 
+            <Modal open={showPrintOptions} onClose={() => setShowPrintOptions(false)} title="Imprimir ticket" size="sm" align="center">
+              <div className="flex gap-3 pt-2 pb-1">
+                <Button size="lg" onClick={() => handleImprimir(1)} className="flex-1">
+                  Simple
+                </Button>
+                <Button size="lg" onClick={() => handleImprimir(2)} className="flex-1">
+                  Doble
+                </Button>
+              </div>
+            </Modal>
+
             <div className="flex gap-2 pt-1">
-              <Button size="md" onClick={handleImprimir} className="flex-1">
+              <Button size="md" onClick={() => setShowPrintOptions(true)} className="flex-1">
                 Imprimir ticket
               </Button>
               <Button
