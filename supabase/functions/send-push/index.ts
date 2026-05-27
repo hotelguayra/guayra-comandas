@@ -58,13 +58,17 @@ serve(async (req) => {
         )
       )
     )
-    console.log('[send-push] results:', JSON.stringify(results))
-
-    // Clean up expired subscriptions (HTTP 410 = gone, 404 = not found — both mean invalid)
     for (let i = 0; i < results.length; i++) {
       const r = results[i]
-      if (r.status === 'rejected' && (r.reason?.statusCode === 410 || r.reason?.statusCode === 404)) {
-        await supabase.from('push_subscriptions').delete().eq('user_id', pedido.mozo_id)
+      if (r.status === 'fulfilled') {
+        console.log('[send-push] sent ok, statusCode:', (r.value as any)?.statusCode)
+      } else {
+        console.log('[send-push] failed, statusCode:', r.reason?.statusCode, 'body:', r.reason?.body)
+        // Only remove on 410 (permanent "gone") — 404 can be transient on FCM
+        if (r.reason?.statusCode === 410) {
+          console.log('[send-push] removing expired subscription for user:', pedido.mozo_id)
+          await supabase.from('push_subscriptions').delete().eq('user_id', pedido.mozo_id)
+        }
       }
     }
 
