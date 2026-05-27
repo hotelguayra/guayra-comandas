@@ -40,6 +40,7 @@ function TicketCopy({
   const hora = fechaImpresion.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
   const mesaLabel = `${mesa.categoria ?? ''}-${mesa.numero}`
   const ticketNum = String(numeroTicket ?? 0).padStart(5, '0')
+  const lastMozo = [...pedidos].reverse().find(p => p.mozo?.rol === 'mozo')?.mozo
 
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '12px', width: '72mm', padding: '4px 0' }}>
@@ -55,16 +56,18 @@ function TicketCopy({
       <div>Fecha: {fecha}  Hora: {hora}</div>
       <div>Mesa: {mesaLabel}</div>
       <div>Cliente: {mesa.cliente ?? '-'}</div>
+      <div>Mozo: {lastMozo?.nombre ?? '-'}</div>
       <hr style={{ border: 'none', borderTop: '1px dashed #000', margin: '3px 0' }} />
-      <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>DETALLE:</div>
+      <div style={{ fontWeight: 'bold', marginBottom: '2px', textAlign: 'center' }}>DETALLE:</div>
       {pedidos.map((pedido) =>
         (pedido.items ?? []).map((item) => {
           const nombre = item.producto?.nombre ?? 'Producto'
           const itemTotal = item.cantidad * item.precio_unitario
           return (
-            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>&nbsp;&nbsp;{nombre} x{item.cantidad}</span>
-              <span>{fmt(itemTotal)}</span>
+            <div key={item.id} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '2px' }}>
+              <span style={{ flexShrink: 0, marginRight: '8px' }}>&nbsp;&nbsp;{item.cantidad}x</span>
+              <span style={{ flex: 1, wordBreak: 'break-word', paddingRight: '4px' }}>{nombre}</span>
+              <span style={{ flexShrink: 0 }}>{fmt(itemTotal)}</span>
             </div>
           )
         })
