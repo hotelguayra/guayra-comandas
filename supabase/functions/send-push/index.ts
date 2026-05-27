@@ -53,7 +53,8 @@ serve(async (req) => {
       subs.map(({ subscription }) =>
         webpush.sendNotification(
           subscription as any,
-          JSON.stringify({ title, body, url: `/mozo/mis-pedidos?mesa=${pedido.mesa_id}`, pedidoId })
+          JSON.stringify({ title, body, url: `/mozo/mis-pedidos?mesa=${pedido.mesa_id}`, pedidoId }),
+          { urgency: 'high', TTL: 86400 }
         )
       )
     )
