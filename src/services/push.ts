@@ -53,7 +53,7 @@ export async function subscribePush(): Promise<boolean> {
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
     })
     console.log('[push] new subscription endpoint:', subscription.endpoint)
 
