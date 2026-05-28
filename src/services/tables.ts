@@ -55,16 +55,38 @@ export async function cancelarCuenta(mesaId: string): Promise<void> {
 }
 
 export async function cerrarMesa(mesaId: string, abiertaAt?: string | null): Promise<void> {
-  let pedidosQuery = supabase
+  // Obtener IDs de pedidos activos de esta mesa
+  let selectQuery = supabase
     .from('pedidos')
-    .update({ estado: 'entregado', updated_at: new Date().toISOString() })
+    .select('id')
     .eq('mesa_id', mesaId)
     .in('estado', ['pendiente', 'en_preparacion', 'listo'])
 
-  if (abiertaAt) pedidosQuery = pedidosQuery.gte('created_at', abiertaAt)
+  if (abiertaAt) selectQuery = selectQuery.gte('created_at', abiertaAt)
 
-  const { error: pedidosError } = await pedidosQuery
-  if (pedidosError) throw pedidosError
+  const { data: pedidosActivos, error: selectError } = await selectQuery
+  if (selectError) throw selectError
+
+  const now = new Date().toISOString()
+
+  if (pedidosActivos && pedidosActivos.length > 0) {
+    const ids = pedidosActivos.map((p: any) => p.id)
+
+    // Actualizar pedidos.estado
+    const { error: pedidosError } = await supabase
+      .from('pedidos')
+      .update({ estado: 'entregado', updated_at: now })
+      .in('id', ids)
+    if (pedidosError) throw pedidosError
+
+    // Actualizar pedido_panel_estados para que desaparezcan de cocina/postres
+    const { error: panelError } = await supabase
+      .from('pedido_panel_estados')
+      .update({ estado: 'entregado', updated_at: now })
+      .in('pedido_id', ids)
+      .not('estado', 'in', '("entregado","cancelado")')
+    if (panelError) throw panelError
+  }
 
   const { error } = await supabase
     .from('mesas')
