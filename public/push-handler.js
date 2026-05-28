@@ -40,18 +40,31 @@ self.addEventListener('pushsubscriptionchange', (event) => {
         const newSub = event.newSubscription
         if (!newSub || !event.oldSubscription) return
 
-        // Read Supabase URL stored by the app when it last subscribed
+        // Read Supabase config stored by the app when it last subscribed.
+        // anonKey is required: Supabase Edge Functions reject requests without Authorization header (401).
+        // userId is a fallback: if the old endpoint was deleted from DB (e.g. after a 410), the server
+        // can still upsert the new subscription using the userId directly.
         const cache = await caches.open('sw-config-v1')
-        const res = await cache.match('/supabase-url')
-        if (!res) return
-        const supabaseUrl = (await res.text()).replace(/\/$/, '')
+        const [urlRes, keyRes, userRes] = await Promise.all([
+          cache.match('/supabase-url'),
+          cache.match('/supabase-anon-key'),
+          cache.match('/user-id'),
+        ])
+        if (!urlRes) return
+        const supabaseUrl = (await urlRes.text()).replace(/\/$/, '')
+        const anonKey = keyRes ? (await keyRes.text()).trim() : ''
+        const userId = userRes ? (await userRes.text()).trim() : ''
+
+        const headers = { 'Content-Type': 'application/json' }
+        if (anonKey) headers['Authorization'] = `Bearer ${anonKey}`
 
         await fetch(`${supabaseUrl}/functions/v1/update-push-sub`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             oldEndpoint: event.oldSubscription.endpoint,
             newSubscription: newSub.toJSON(),
+            userId,
           }),
         })
       } catch (e) {

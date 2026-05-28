@@ -63,11 +63,15 @@ export async function subscribePush(): Promise<boolean> {
     console.log('[push] upsert error:', error ?? 'none')
 
     if (!error) {
-      // Store Supabase URL in SW cache so the pushsubscriptionchange handler can call the server
-      // even when the app is closed (SW has no access to env variables or auth)
+      // Store Supabase URL, anon key, and user ID in SW cache so the pushsubscriptionchange
+      // handler can call the server even when the app is closed.
+      // The anon key is needed for the Authorization header (Supabase Edge Functions require it).
+      // The user ID is needed as fallback when the old endpoint is no longer in the DB.
       try {
         const swCache = await caches.open('sw-config-v1')
         await swCache.put('/supabase-url', new Response(import.meta.env.VITE_SUPABASE_URL ?? ''))
+        await swCache.put('/supabase-anon-key', new Response(import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''))
+        await swCache.put('/user-id', new Response(user.id))
       } catch {}
     }
 
