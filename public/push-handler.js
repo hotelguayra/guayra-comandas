@@ -33,11 +33,11 @@ self.addEventListener('pushsubscriptionchange', (event) => {
   event.waitUntil(
     (async () => {
       try {
-        // Re-subscribe using the same VAPID options the browser already knows
-        const newSub = event.newSubscription ??
-          (event.oldSubscription
-            ? await self.registration.pushManager.subscribe(event.oldSubscription.options)
-            : null)
+        // Only use browser-provided newSubscription.
+        // Never call pushManager.subscribe() here: event.oldSubscription.options.applicationServerKey
+        // is an ArrayBuffer (not Uint8Array), which creates a badly-bound subscription → FCM returns 410.
+        // If newSubscription is null, do nothing — the app will re-subscribe via visibilitychange on next open.
+        const newSub = event.newSubscription
         if (!newSub || !event.oldSubscription) return
 
         // Read Supabase URL stored by the app when it last subscribed
