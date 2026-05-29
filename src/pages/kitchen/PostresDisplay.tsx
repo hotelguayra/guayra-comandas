@@ -200,7 +200,7 @@ export function PostresDisplay() {
   })
 
   const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['pedidos-activos', 'postres'] })
+    queryClient.invalidateQueries({ queryKey: ['pedidos-activos'] })
   }, [queryClient])
 
   useRealtimePedidos({ onInsert: invalidate, onUpdate: invalidate, onReconnect: invalidate })

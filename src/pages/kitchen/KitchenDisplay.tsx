@@ -198,19 +198,15 @@ export function KitchenDisplay() {
   const { data: pedidos, isLoading } = useQuery({
     queryKey: ['pedidos-activos', panel],
     queryFn: () => getPedidosActivos(panel),
-    refetchInterval: false,
+    refetchInterval: 30000,
     placeholderData: (prev) => prev,
   })
 
-  const handleInsert = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['pedidos-activos', panel] })
-  }, [queryClient, panel])
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['pedidos-activos'] })
+  }, [queryClient])
 
-  const handleUpdate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['pedidos-activos', panel] })
-  }, [queryClient, panel])
-
-  useRealtimePedidos({ onInsert: handleInsert, onUpdate: handleUpdate })
+  useRealtimePedidos({ onInsert: invalidate, onUpdate: invalidate, onReconnect: invalidate })
 
   // getPedidosActivos ya filtra por panel — solo agrupa por estado de columna
   const getByEstado = (estado: OrderStatus) =>
