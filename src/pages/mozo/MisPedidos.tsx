@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedidosForMesas } from '@/services/orders'
@@ -169,10 +169,11 @@ export function MisPedidos() {
 
   const mozosCompañeros = profiles?.filter(p => p.rol === 'mozo' && p.activo && p.id !== user?.id) ?? []
 
-  useRealtimePedidos({
-    onInsert: () => queryClient.invalidateQueries({ queryKey: ['mis-pedidos'] }),
-    onUpdate: () => queryClient.invalidateQueries({ queryKey: ['mis-pedidos'] }),
-  })
+  const invalidateMisPedidos = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['mis-pedidos'] }),
+    [queryClient]
+  )
+  useRealtimePedidos({ onInsert: invalidateMisPedidos, onUpdate: invalidateMisPedidos })
 
   const handlePedirCuenta = (mesaId: string, pedidosMesa: Pedido[]) => {
     const tieneActivos = pedidosMesa.some(

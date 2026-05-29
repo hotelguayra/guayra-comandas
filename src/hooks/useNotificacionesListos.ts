@@ -73,23 +73,28 @@ export function useNotificacionesListos(mozoId: string | undefined): Notificacio
 
   const fetchListos = useCallback(async () => {
     if (!mozoId) return
-    // Cocina actualiza pedido_panel_estados, nunca pedidos.estado.
-    // Hay que leer directamente de pedido_panel_estados para ver los 'listo'.
+    // Filtra por mozo_id en el servidor para no traer todos los pedidos del sistema.
+    // Luego comprueba client-side que algún panel esté en 'listo'.
     const { data } = await supabase
-      .from('pedido_panel_estados')
-      .select('pedido:pedidos(mesa_id, mozo_id, mesa:mesas(nombre, cliente, estado, mozo_activo_id))')
-      .eq('estado', 'listo')
+      .from('pedidos')
+      .select(`
+        mesa_id,
+        mozo_id,
+        mesa:mesas(nombre, cliente, estado, mozo_activo_id),
+        panel_estados:pedido_panel_estados(estado)
+      `)
+      .eq('mozo_id', mozoId)
 
     const items: PedidoListo[] = (data ?? [])
-      .filter((row: any) =>
-        row.pedido?.mozo_id === mozoId &&
-        row.pedido?.mesa?.mozo_activo_id === mozoId &&
-        row.pedido?.mesa?.estado !== 'libre'
+      .filter((p: any) =>
+        p.mesa?.mozo_activo_id === mozoId &&
+        p.mesa?.estado !== 'libre' &&
+        (p.panel_estados ?? []).some((pe: any) => pe.estado === 'listo')
       )
-      .map((row: any) => ({
-        mesa_id: row.pedido.mesa_id as string,
-        mesaNombre: row.pedido.mesa?.nombre ?? '—',
-        cliente: row.pedido.mesa?.cliente ?? undefined,
+      .map((p: any) => ({
+        mesa_id: p.mesa_id as string,
+        mesaNombre: p.mesa?.nombre ?? '—',
+        cliente: p.mesa?.cliente ?? undefined,
       }))
 
     const seen = new Set<string>()
@@ -116,6 +121,7 @@ export function useNotificacionesListos(mozoId: string | undefined): Notificacio
 
   useEffect(() => {
     knownMesasRef.current = null
+    if (!mozoId) return
     fetchMisMesas()
     fetchListos()
 

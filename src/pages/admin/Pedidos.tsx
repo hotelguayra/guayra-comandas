@@ -5,7 +5,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Clock } from 'lucide-react'
 import type { OrderStatus } from '@/types'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: 'pendiente', label: 'Pendiente' },
@@ -17,6 +17,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
 
 export function AdminPedidos() {
   const queryClient = useQueryClient()
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const { data: pedidos, isLoading } = useQuery({
     queryKey: ['all-pedidos-admin'],
@@ -31,8 +32,13 @@ export function AdminPedidos() {
   useRealtimePedidos({ onInsert: invalidate, onUpdate: invalidate })
 
   const handleEstado = async (id: string, estado: OrderStatus) => {
-    await updatePedidoEstado(id, estado)
-    queryClient.invalidateQueries({ queryKey: ['all-pedidos-admin'] })
+    setUpdatingId(id)
+    try {
+      await updatePedidoEstado(id, estado)
+      queryClient.invalidateQueries({ queryKey: ['all-pedidos-admin'] })
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   if (isLoading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
@@ -63,7 +69,8 @@ export function AdminPedidos() {
                   <select
                     value={pedido.estado}
                     onChange={(e) => handleEstado(pedido.id, e.target.value as OrderStatus)}
-                    className="bg-windsor-lighter border border-tierra/20 text-tierra text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-bronceado/30"
+                    disabled={updatingId === pedido.id}
+                    className="bg-windsor-lighter border border-tierra/20 text-tierra text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-bronceado/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>

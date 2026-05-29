@@ -195,19 +195,15 @@ export function PostresDisplay() {
   const { data: pedidos, isLoading } = useQuery({
     queryKey: ['pedidos-activos', 'postres'],
     queryFn: () => getPedidosActivos('postres'),
-    refetchInterval: false,
+    refetchInterval: 30000,
     placeholderData: (prev) => prev,
   })
 
-  const handleInsert = useCallback(() => {
+  const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['pedidos-activos', 'postres'] })
   }, [queryClient])
 
-  const handleUpdate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['pedidos-activos', 'postres'] })
-  }, [queryClient])
-
-  useRealtimePedidos({ onInsert: handleInsert, onUpdate: handleUpdate })
+  useRealtimePedidos({ onInsert: invalidate, onUpdate: invalidate, onReconnect: invalidate })
 
   // getPedidosActivos ya filtra por panel 'postres'
   const getByEstado = (estado: OrderStatus) =>
@@ -216,7 +212,8 @@ export function PostresDisplay() {
   useEffect(() => {
     if (!pedidos) return
     const active = pedidos.filter(p =>
-      ['pendiente', 'en_preparacion'].includes(p.estado)
+      ['pendiente', 'en_preparacion'].includes(p.estado) &&
+      p.items?.some(i => i.producto?.panel === 'postres')
     ).length
     if (prevActiveCountRef.current === null) {
       prevActiveCountRef.current = active

@@ -113,14 +113,22 @@ export async function updatePanelEstado(
 }
 
 
-// Mantener para uso desde mozo / recepcion (estado global del pedido)
+// Actualiza el estado global del pedido y sincroniza pedido_panel_estados
+// para que los cambios del admin se reflejen en los paneles de cocina/postres
 export async function updatePedidoEstado(pedidoId: string, estado: OrderStatus): Promise<void> {
+  const now = new Date().toISOString()
   const { error } = await supabase
     .from('pedidos')
-    .update({ estado, updated_at: new Date().toISOString() })
+    .update({ estado, updated_at: now })
     .eq('id', pedidoId)
-
   if (error) throw error
+
+  const { error: panelError } = await supabase
+    .from('pedido_panel_estados')
+    .update({ estado, updated_at: now })
+    .eq('pedido_id', pedidoId)
+    .not('estado', 'in', '("entregado","cancelado")')
+  if (panelError) throw panelError
 }
 
 export async function getAllPedidos(limit = 50): Promise<Pedido[]> {

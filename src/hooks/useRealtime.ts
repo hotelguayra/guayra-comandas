@@ -1,25 +1,31 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Pedido, OrderStatus } from '@/types'
+import type { OrderStatus } from '@/types'
 
 interface UseRealtimePedidosOptions {
-  onInsert?: (pedido: Pedido) => void
+  onInsert?: () => void
   onUpdate?: (pedido: { id: string; estado: OrderStatus }) => void
   onDelete?: (id: string) => void
+  onReconnect?: () => void
 }
 
 export function useRealtimePedidos({
   onInsert,
   onUpdate,
   onDelete,
+  onReconnect,
 }: UseRealtimePedidosOptions) {
+  const connectedOnce = useRef(false)
+
   useEffect(() => {
+    connectedOnce.current = false
+
     const channel = supabase
       .channel('pedidos-realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'pedidos' },
-        (payload) => onInsert?.(payload.new as Pedido)
+        () => onInsert?.()
       )
       .on(
         'postgres_changes',
@@ -35,7 +41,7 @@ export function useRealtimePedidos({
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'pedido_panel_estados' },
-        (payload) => onInsert?.(payload.new as Pedido)
+        () => onInsert?.()
       )
       .on(
         'postgres_changes',
@@ -43,12 +49,19 @@ export function useRealtimePedidos({
         (payload) =>
           onUpdate?.({ id: payload.new.pedido_id, estado: payload.new.estado as OrderStatus })
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          if (connectedOnce.current) {
+            onReconnect?.()
+          }
+          connectedOnce.current = true
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [onInsert, onUpdate, onDelete])
+  }, [onInsert, onUpdate, onDelete, onReconnect])
 }
 
 export function useKitchenSound() {
@@ -69,6 +82,7 @@ export function useKitchenSound() {
 
     oscillator.start(ctx.currentTime)
     oscillator.stop(ctx.currentTime + 0.4)
+    oscillator.addEventListener('ended', () => ctx.close())
   }, [])
 
   return { playNotification }

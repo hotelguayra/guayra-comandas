@@ -97,7 +97,8 @@ export async function getHistorialPedidos(filtros: FiltrosHistorial = {}): Promi
   }
 
   if (filtros.cliente) {
-    query = query.ilike('cliente', `%${filtros.cliente}%`)
+    const escaped = filtros.cliente.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    query = query.ilike('cliente', `%${escaped}%`)
   }
 
   const { data, error } = await query

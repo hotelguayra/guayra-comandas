@@ -793,16 +793,16 @@ function ModalDetalleMesa({
 
 export function MesasEnVivo() {
   const queryClient = useQueryClient()
-  const [selectedMesa, setSelectedMesa] = useState<Mesa | null>(null)
+  const [selectedMesaId, setSelectedMesaId] = useState<string | null>(null)
   const [mesaAAbrir, setMesaAAbrir] = useState<Mesa | null>(null)
-  const selectedMesaRef = useRef<Mesa | null>(null)
-  useEffect(() => { selectedMesaRef.current = selectedMesa }, [selectedMesa])
+  const selectedMesaIdRef = useRef<string | null>(null)
+  useEffect(() => { selectedMesaIdRef.current = selectedMesaId }, [selectedMesaId])
 
   const handleClickMesa = (mesa: Mesa) => {
     if (mesa.estado === 'libre') {
       setMesaAAbrir(mesa)
     } else {
-      setSelectedMesa(mesa)
+      setSelectedMesaId(mesa.id)
     }
   }
 
@@ -810,6 +810,9 @@ export function MesasEnVivo() {
     queryKey: ['recepcion-mesas'],
     queryFn: getMesasParaRecepcion,
   })
+
+  // Se deriva de la query para que se actualice automáticamente con cambios realtime
+  const selectedMesa = mesas.find(m => m.id === selectedMesaId) ?? null
 
   useEffect(() => {
     const channel = supabase
@@ -819,8 +822,8 @@ export function MesasEnVivo() {
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
         queryClient.invalidateQueries({ queryKey: ['recepcion-mesas'] })
-        if (selectedMesaRef.current) {
-          queryClient.invalidateQueries({ queryKey: ['recepcion-pedidos-mesa', selectedMesaRef.current.id] })
+        if (selectedMesaIdRef.current) {
+          queryClient.invalidateQueries({ queryKey: ['recepcion-pedidos-mesa', selectedMesaIdRef.current] })
         }
       })
       .subscribe()
@@ -877,7 +880,7 @@ export function MesasEnVivo() {
         <ModalDetalleMesa
           mesa={selectedMesa}
           open={!!selectedMesa}
-          onClose={() => setSelectedMesa(null)}
+          onClose={() => setSelectedMesaId(null)}
         />
       )}
 

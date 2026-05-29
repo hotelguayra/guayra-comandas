@@ -244,6 +244,7 @@ export function MesaSelector() {
             <Button
               onClick={handleConfirmar}
               loading={abriendo}
+              disabled={!cliente.trim()}
               className="flex-1"
             >
               Confirmar

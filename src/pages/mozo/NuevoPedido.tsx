@@ -51,6 +51,7 @@ export function NuevoPedido() {
   const [notaGlobal, setNotaGlobal] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
   const { items, addItem, removeItem, updateQty, updateNota, clearCart, setMesa, mesaId: cartMesaId, total } = useCartStore()
@@ -152,6 +153,7 @@ export function NuevoPedido() {
   const handleEnviar = async () => {
     if (!mesaId || !user || items.length === 0) return
     setSending(true)
+    setSendError(null)
 
     try {
       const allNullPanel = items.every((i) => !i.producto.panel)
@@ -178,6 +180,7 @@ export function NuevoPedido() {
       setTimeout(() => navigate('/mozo'), 1500)
     } catch (err) {
       console.error(err)
+      setSendError('Error al enviar el pedido. Verificá la conexión e intentá de nuevo.')
       setSending(false)
     }
   }
@@ -306,7 +309,7 @@ export function NuevoPedido() {
           className="fixed bottom-24 right-4 bg-bronceado text-windsor font-bold rounded-2xl px-5 py-3.5 shadow-premium flex items-center gap-3 active:scale-95 transition-all z-30"
         >
           <ShoppingBag size={20} />
-          <span>{items.length} items</span>
+          <span>{items.reduce((s, i) => s + i.cantidad, 0)} items</span>
           <span className="bg-windsor/30 px-2 py-0.5 rounded-lg text-sm">
             ${total().toFixed(2)}
           </span>
@@ -369,6 +372,9 @@ export function NuevoPedido() {
           <span className="font-heading text-xl text-bronceado">${total().toFixed(2)}</span>
         </div>
 
+        {sendError && (
+          <p className="text-rubi-light text-xs text-center -mb-1">{sendError}</p>
+        )}
         <Button onClick={handleEnviar} loading={sending} size="lg" className="w-full">
           <Send size={18} className="mr-2" />
           Enviar a cocina
