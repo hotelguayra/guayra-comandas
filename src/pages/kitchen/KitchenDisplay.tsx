@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedidosActivos, updatePanelEstado } from '@/services/orders'
 import { getAllProductos } from '@/services/products'
-import { useRealtimePedidos, useKitchenSound } from '@/hooks/useRealtime'
+import { useRealtimePedidos, useRealtimeProductos, useKitchenSound } from '@/hooks/useRealtime'
 import { Spinner } from '@/components/ui/Spinner'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
@@ -217,6 +217,12 @@ export function KitchenDisplay() {
   }, [queryClient])
 
   useRealtimePedidos({ onInsert: invalidate, onUpdate: invalidate, onReconnect: invalidate })
+
+  const invalidateProductos = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['productos-todos-disp'] })
+    queryClient.invalidateQueries({ queryKey: ['productos'] })
+  }, [queryClient])
+  useRealtimeProductos(invalidateProductos)
 
   // getPedidosActivos ya filtra por panel — solo agrupa por estado de columna
   const getByEstado = (estado: OrderStatus) =>

@@ -6,11 +6,13 @@ import { Logo } from '@/components/ui/Logo'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { RoleBadge } from '@/components/ui/Badge'
+import { Eye, EyeOff } from 'lucide-react'
 import type { UserRole } from '@/types'
 
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -40,7 +42,7 @@ export function Login() {
       setSession(data.session)
       setProfile({ id: data.user.id, nombre, rol, activo: true, created_at: data.user.created_at })
 
-      const dest = rol === 'admin' ? '/admin' : rol === 'cocina' ? '/cocina' : '/mozo'
+      const dest = rol === 'admin' ? '/admin' : rol === 'cocina' ? '/cocina' : rol === 'recepcion' ? '/recepcion' : '/mozo'
       navigate(dest, { replace: true })
     } catch {
       setError('Email o contraseña incorrectos')
@@ -97,15 +99,28 @@ export function Login() {
               required
               autoComplete="email"
             />
-            <Input
-              label="Contraseña"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-tierra-muted font-body">Contraseña</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                  className="input-field w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-tierra-muted hover:text-tierra transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
             {error && (
               <p className="text-rubi-light text-sm bg-rubi/10 border border-rubi/20 rounded-xl px-4 py-3">
                 {error}

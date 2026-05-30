@@ -64,6 +64,20 @@ export function useRealtimePedidos({
   }, [onInsert, onUpdate, onDelete, onReconnect])
 }
 
+export function useRealtimeProductos(onUpdate: () => void) {
+  useEffect(() => {
+    const channel = supabase
+      .channel('productos-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos' },
+        onUpdate
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [onUpdate])
+}
+
 export function useKitchenSound() {
   const playNotification = useCallback(() => {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRealtimeProductos } from '@/hooks/useRealtime'
 import { getAllProductos, toggleDisponibilidadCompleto, eliminarFaltante, reponerTodoElStock } from '@/services/products'
 import { Package, PackageX, RotateCcw, X, Search } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -20,10 +21,12 @@ export function StockPage() {
     queryFn: getAllProductos,
   })
 
-  const invalidar = () => {
+  const invalidar = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['productos-todos-disp'] })
     queryClient.invalidateQueries({ queryKey: ['productos'] })
-  }
+  }, [queryClient])
+
+  useRealtimeProductos(invalidar)
 
   const handleToggle = async (id: string, disponible: boolean) => {
     setToggling(id)
