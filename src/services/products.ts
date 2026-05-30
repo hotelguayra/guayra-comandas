@@ -127,3 +127,26 @@ export async function toggleDisponibilidad(id: string, disponible: boolean): Pro
   const { error } = await supabase.from('productos').update({ disponible }).eq('id', id)
   if (error) throw error
 }
+
+export async function toggleDisponibilidadCompleto(id: string, disponible: boolean): Promise<void> {
+  const patch = disponible
+    ? { disponible: true, nota_stock: null, nota_stock_fecha: null }
+    : { disponible: false, nota_stock_fecha: new Date().toISOString() }
+  const { error } = await supabase.from('productos').update(patch).eq('id', id)
+  if (error) throw error
+}
+
+export async function eliminarFaltante(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('productos')
+    .update({ nota_stock: null, nota_stock_fecha: null })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function reponerTodoElStock(panelFilter?: 'cocina' | 'postres'): Promise<void> {
+  let query = supabase.from('productos').update({ disponible: true, nota_stock: null, nota_stock_fecha: null })
+  if (panelFilter) query = query.eq('panel', panelFilter)
+  const { error } = await query
+  if (error) throw error
+}

@@ -27,6 +27,7 @@ import { AdminCategorias as RecepcionCategorias } from '@/pages/admin/Categorias
 import { AdminSubcategorias as RecepcionSubcategorias } from '@/pages/admin/Subcategorias'
 import { AdminMesas as RecepcionMesas } from '@/pages/admin/Mesas'
 import { Configuracion as RecepcionConfiguracion } from '@/pages/recepcion/Configuracion'
+import { StockPage as RecepcionStock } from '@/pages/recepcion/StockPage'
 
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
@@ -301,6 +302,16 @@ function AppRoutes() {
           <ProtectedRoute roles={['recepcion', 'admin']}>
             <RecepcionLayout>
               <MesasEnVivo />
+            </RecepcionLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recepcion/stock"
+        element={
+          <ProtectedRoute roles={['recepcion', 'admin']}>
+            <RecepcionLayout>
+              <RecepcionStock />
             </RecepcionLayout>
           </ProtectedRoute>
         }

@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Monitor, History, Menu, X, LayoutDashboard, Package, Tag, Layers, Table2 } from 'lucide-react'
+import { Monitor, History, Menu, X, LayoutDashboard, Package, Tag, Layers, Table2, PackageX } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/recepcion', icon: Monitor, label: 'Mesas en Vivo', end: true },
   { to: '/recepcion/historial', icon: History, label: 'Historial' },
   { to: '/recepcion/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/recepcion/stock', icon: PackageX, label: 'Stock' },
   { to: '/recepcion/productos', icon: Package, label: 'Productos' },
   { to: '/recepcion/categorias', icon: Tag, label: 'Categorías' },
   { to: '/recepcion/subcategorias', icon: Layers, label: 'Subcategorías' },

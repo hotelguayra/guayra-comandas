@@ -1,13 +1,15 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getPedidosActivos, updatePanelEstado } from '@/services/orders'
+import { getAllProductos } from '@/services/products'
 import { useRealtimePedidos, useKitchenSound } from '@/hooks/useRealtime'
 import { Spinner } from '@/components/ui/Spinner'
 import { Logo } from '@/components/ui/Logo'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { useNavigate } from 'react-router-dom'
-import { Clock, ChevronRight, Maximize2, ChefHat, Cake, Sun, Moon, PackageX } from 'lucide-react'
+import { Clock, ChevronRight, Maximize2, ChefHat, Cake, Sun, Moon, PackageX, ClipboardList } from 'lucide-react'
 import { DisponibilidadPanel } from '@/components/kitchen/DisponibilidadPanel'
+import { FaltantesPanel } from '@/components/kitchen/FaltantesPanel'
 import type { Pedido, OrderStatus } from '@/types'
 import { clsx } from 'clsx'
 
@@ -178,6 +180,14 @@ export function PostresDisplay() {
   const prevActiveCountRef = useRef<number | null>(null)
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('kitchen-theme') !== 'light')
   const [dispOpen, setDispOpen] = useState(false)
+  const [faltantesOpen, setFaltantesOpen] = useState(false)
+
+  const { data: todosProductos = [] } = useQuery({
+    queryKey: ['productos-todos-disp'],
+    queryFn: getAllProductos,
+    staleTime: 30_000,
+  })
+  const faltantesCount = todosProductos.filter((p: any) => p.nota_stock_fecha != null).length
 
   const toggleTheme = () => {
     setDarkMode((prev) => {
@@ -241,7 +251,42 @@ export function PostresDisplay() {
         'px-6 py-3 flex items-center justify-between border-b',
         darkMode ? 'glass border-tierra/10' : 'bg-tierra-light/95 backdrop-blur-md border-tierra-dark/20'
       )}>
-        <Logo size="sm" variant={darkMode ? 'dark' : 'light'} />
+        {/* Izquierda: logo + botones principales */}
+        <div className="flex items-center gap-4">
+          <Logo size="sm" variant={darkMode ? 'dark' : 'light'} />
+          <div className={clsx('w-px h-8', darkMode ? 'bg-tierra/20' : 'bg-tierra-dark/20')} />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFaltantesOpen(true)}
+              title="Faltantes"
+              className={clsx(
+                'relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors',
+                darkMode ? 'bg-windsor-lighter/50 text-tierra hover:bg-windsor-lighter' : 'bg-tierra/15 text-windsor hover:bg-tierra/25'
+              )}
+            >
+              {faltantesCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-rubi text-white text-[10px] font-bold px-1 leading-none">
+                  {faltantesCount > 99 ? '99+' : faltantesCount}
+                </span>
+              )}
+              <ClipboardList size={20} />
+              <span className="text-[10px] font-bold leading-none">Faltantes</span>
+            </button>
+            <button
+              onClick={() => setDispOpen(true)}
+              title="Disponibilidad de productos"
+              className={clsx(
+                'flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors',
+                darkMode ? 'bg-windsor-lighter/50 text-tierra hover:bg-windsor-lighter' : 'bg-tierra/15 text-windsor hover:bg-tierra/25'
+              )}
+            >
+              <PackageX size={20} />
+              <span className="text-[10px] font-bold leading-none">Stock</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Derecha: navegación + utilidades */}
         <div className="flex items-center gap-4">
           <div className={clsx('flex items-center gap-1 rounded-xl p-1', darkMode ? 'bg-windsor-lighter' : 'bg-tierra/50')}>
             <button
@@ -269,16 +314,6 @@ export function PostresDisplay() {
             <div className="w-2 h-2 rounded-full bg-jade animate-pulse" />
             <span className={clsx('text-xs', darkMode ? 'text-jade' : 'text-jade-dark')}>Realtime activo</span>
           </div>
-          <button
-            onClick={() => setDispOpen(true)}
-            title="Disponibilidad de productos"
-            className={clsx(
-              'p-2 rounded-xl transition-colors',
-              darkMode ? 'hover:bg-windsor-lighter text-tierra-muted' : 'hover:bg-tierra/40 text-windsor/60'
-            )}
-          >
-            <PackageX size={18} />
-          </button>
           <button
             onClick={toggleTheme}
             title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
@@ -366,6 +401,12 @@ export function PostresDisplay() {
       <DisponibilidadPanel
         open={dispOpen}
         onClose={() => setDispOpen(false)}
+        darkMode={darkMode}
+        panelFilter="postres"
+      />
+      <FaltantesPanel
+        open={faltantesOpen}
+        onClose={() => setFaltantesOpen(false)}
         darkMode={darkMode}
       />
     </div>

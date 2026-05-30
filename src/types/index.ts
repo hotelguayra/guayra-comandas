@@ -39,6 +39,8 @@ export interface Producto {
   subcategoria?: string
   panel?: 'cocina' | 'postres' | null
   categoria?: Categoria
+  nota_stock?: string | null
+  nota_stock_fecha?: string | null
 }
 
 export type MesaEstado = 'libre' | 'ocupada' | 'cuenta'

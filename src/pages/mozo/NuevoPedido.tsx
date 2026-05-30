@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Fuse from 'fuse.js'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getProductos, getCategorias } from '@/services/products'
+import { getAllProductos, getCategorias } from '@/services/products'
 import { supabase } from '@/lib/supabase'
 import { useSubcategoriasMap } from '@/hooks/useSubcategoriasMap'
 import { getMesas } from '@/services/tables'
@@ -13,27 +13,49 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { ShoppingBag, Plus, Minus, Trash2, ChevronLeft, Send, Search, X } from 'lucide-react'
+import { ShoppingBag, Plus, Minus, Trash2, ChevronLeft, Send, Search, X, AlertTriangle } from 'lucide-react'
 import type { Producto } from '@/types'
 import { clsx } from 'clsx'
 import { getSubcategoriaOrder } from '@/config/subcategorias'
 
 
 function ProductoCard({ producto, onAdd, showCategoria }: { producto: Producto; onAdd: () => void; showCategoria?: boolean }) {
+  const agotado = !producto.disponible
   return (
     <button
       onClick={onAdd}
-      className="card px-3 py-2.5 text-left hover:border-bronceado/30 active:scale-95 transition-all duration-200 group flex items-center gap-2"
+      className={clsx(
+        'card px-3 py-2.5 text-left active:scale-95 transition-all duration-200 group flex items-center gap-2',
+        agotado
+          ? 'border-bronceado/15 hover:border-bronceado/35 opacity-70'
+          : 'hover:border-bronceado/30'
+      )}
     >
       {showCategoria && producto.categoria && (
         <span className="text-[9px] font-bold text-tierra-muted bg-windsor-lighter rounded px-1.5 py-0.5 leading-none flex-shrink-0">
           {producto.categoria.nombre}
         </span>
       )}
-      <p className="font-body font-bold text-tierra group-hover:text-bronceado transition-colors text-sm leading-none flex-1 truncate">
+      <p className={clsx(
+        'font-body font-bold text-sm leading-none flex-1 truncate transition-colors',
+        agotado
+          ? 'text-tierra-muted group-hover:text-tierra'
+          : 'text-tierra group-hover:text-bronceado'
+      )}>
         {producto.nombre}
       </p>
-      <span className="w-6 h-6 rounded-lg bg-bronceado/10 text-bronceado flex items-center justify-center group-hover:bg-bronceado group-hover:text-windsor transition-colors flex-shrink-0">
+      {agotado && (
+        <span className="flex items-center gap-0.5 text-[9px] font-bold text-bronceado/80 bg-bronceado/10 border border-bronceado/20 rounded px-1.5 py-0.5 leading-none flex-shrink-0">
+          <AlertTriangle size={9} />
+          sin stock
+        </span>
+      )}
+      <span className={clsx(
+        'w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
+        agotado
+          ? 'bg-tierra/10 text-tierra-muted group-hover:bg-tierra/20 group-hover:text-tierra'
+          : 'bg-bronceado/10 text-bronceado group-hover:bg-bronceado group-hover:text-windsor'
+      )}>
         <Plus size={13} />
       </span>
     </button>
@@ -60,7 +82,7 @@ export function NuevoPedido() {
     const channel = supabase
       .channel('productos-disponibilidad-mozo')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'productos' }, () => {
-        queryClient.invalidateQueries({ queryKey: ['productos'] })
+        queryClient.invalidateQueries({ queryKey: ['productos-mozo'] })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -91,8 +113,8 @@ export function NuevoPedido() {
   const subcategoriaOrderMap = useSubcategoriasMap()
 
   const { data: productos, isLoading } = useQuery({
-    queryKey: ['productos'],
-    queryFn: getProductos,
+    queryKey: ['productos-mozo'],
+    queryFn: getAllProductos,
   })
 
   const productosPorCategoria = useMemo(
@@ -320,9 +342,20 @@ export function NuevoPedido() {
       <Modal open={cartOpen} onClose={() => setCartOpen(false)} title="Tu pedido" size="md">
         <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide mb-4">
           {items.map((item) => (
-            <div key={item.producto.id} className="bg-windsor-lighter rounded-xl p-3">
+            <div key={item.producto.id} className={clsx(
+              'rounded-xl p-3',
+              !item.producto.disponible ? 'bg-bronceado/8 border border-bronceado/20' : 'bg-windsor-lighter'
+            )}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-tierra text-sm font-bold">{item.producto.nombre}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-tierra text-sm font-bold truncate">{item.producto.nombre}</span>
+                  {!item.producto.disponible && (
+                    <span className="flex items-center gap-0.5 text-[9px] font-bold text-bronceado/80 bg-bronceado/10 border border-bronceado/20 rounded px-1.5 py-0.5 leading-none flex-shrink-0">
+                      <AlertTriangle size={9} />
+                      sin stock
+                    </span>
+                  )}
+                </div>
                 <button onClick={() => removeItem(item.producto.id)}>
                   <Trash2 size={14} className="text-rubi-light" />
                 </button>
