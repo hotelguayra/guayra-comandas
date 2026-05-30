@@ -1,23 +1,17 @@
--- Resetea disponibilidad y faltantes de todos los productos a las 3:00 AM (hora Argentina, UTC-3)
--- Equivale a las 06:00 UTC en horario de verano / 06:00 UTC todo el año (Argentina no usa DST)
+-- Reposición automática de stock a las 3:00 AM (hora Argentina, UTC-3 = 06:00 UTC)
+-- Solo resetea disponibilidad. Los faltantes (nota_stock, nota_stock_fecha) son manuales.
 
--- Eliminar si ya existe (para poder re-ejecutar la migración sin error)
+-- Eliminar jobs duplicados si existen
 SELECT cron.unschedule('reset-stock-diario') WHERE EXISTS (
   SELECT 1 FROM cron.job WHERE jobname = 'reset-stock-diario'
 );
+SELECT cron.unschedule('reponer-stock-diario') WHERE EXISTS (
+  SELECT 1 FROM cron.job WHERE jobname = 'reponer-stock-diario'
+);
 
+-- Job único: repone solo disponibilidad
 SELECT cron.schedule(
-  'reset-stock-diario',
+  'reponer-stock-diario',
   '0 6 * * *',
-  $$
-    UPDATE public.productos
-    SET
-      disponible        = true,
-      nota_stock        = null,
-      nota_stock_fecha  = null
-    WHERE
-      disponible = false
-      OR nota_stock IS NOT NULL
-      OR nota_stock_fecha IS NOT NULL;
-  $$
+  'UPDATE public.productos SET disponible = true WHERE disponible = false'
 );
